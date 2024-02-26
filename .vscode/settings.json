@@ -1,3 +1,9 @@
 {
     "debug.onTaskErrors": "debugAnyway",
+    "files.associations": {
+        "*.mq5": "mq4",
+        "stdint.h": "c",
+        "stddef.h": "c",
+        "keyboard.h": "c"
+    },
 }
