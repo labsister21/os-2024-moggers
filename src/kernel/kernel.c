@@ -1,5 +1,5 @@
 #include <stdint.h>
-#include "std/stdtype.h"
+#include <stdbool.h>
 #include "gdt/gdt.h"
 #include "kernel/kernel-entrypoint.h"
 
@@ -13,5 +13,5 @@ void kernel_setup(void) {
     */
 
     load_gdt(&_gdt_gdtr);
-    while (TRUE);
+    while (true);
 }
