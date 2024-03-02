@@ -4,6 +4,7 @@
         "*.mq5": "mq4",
         "stdint.h": "c",
         "stddef.h": "c",
-        "keyboard.h": "c"
+        "keyboard.h": "c",
+        "string.h": "c"
     },
 }
