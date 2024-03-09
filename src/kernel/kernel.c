@@ -2,7 +2,8 @@
 #include <stdbool.h>
 #include "gdt/gdt.h"
 #include "kernel/kernel-entrypoint.h"
-// #include "framebuffer/framebuffer.h"
+#include "framebuffer/portio.h"
+#include "framebuffer/framebuffer.h"
 // #include "interrupt/idt.h"
 // #include "interrupt/interrupt.h"
 // #include "keyboard/keyboard.h"
@@ -16,16 +17,16 @@ void kernel_setup(void) {
     while (TRUE) b += 1;
     */
    
-    load_gdt(&_gdt_gdtr);
-    while (true);
-    
-    // framebuffer_clear();
-    // framebuffer_write(3, 8,  'H', 0, 0xF);
-    // framebuffer_write(3, 9,  'a', 0, 0xF);
-    // framebuffer_write(3, 10, 'i', 0, 0xF);
-    // framebuffer_write(3, 11, '!', 0, 0xF);
-    // framebuffer_set_cursor(3, 10);
+    // load_gdt(&_gdt_gdtr);
     // while (true);
+    
+    framebuffer_clear();
+    framebuffer_write(3, 8,  'H', 0, 0xF);
+    framebuffer_write(3, 9,  'a', 0, 0xF);
+    framebuffer_write(3, 10, 'i', 0, 0xF);
+    framebuffer_write(3, 11, '!', 0, 0xF);
+    framebuffer_set_cursor(3, 10);
+    while (true);
     
 
     // load_gdt(&_gdt_gdtr);
