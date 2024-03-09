@@ -26,5 +26,5 @@ void framebuffer_write(uint8_t row, uint8_t col, char c, uint8_t fg, uint8_t bg)
 
 void framebuffer_clear(void) {
     // TODO : Implement
-    memset(FRAMEBUFFER_MEMORY_OFFSET, 0x0700, 25 * 2 * 80 * 2);
+    memset(FRAMEBUFFER_MEMORY_OFFSET, 0x00, 25 * 2 * 80 * 2);
 }
