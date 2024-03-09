@@ -6,7 +6,7 @@
 #include "framebuffer/framebuffer.h"
 #include "interrupt/idt.h"
 #include "interrupt/interrupt.h"
-// #include "keyboard/keyboard.h"
+#include "keyboard/keyboard.h"
 
 
 void kernel_setup(void) {
@@ -29,22 +29,23 @@ void kernel_setup(void) {
     // while (true);
     
 
+    // load_gdt(&_gdt_gdtr);
+    // pic_remap();
+    // initialize_idt();
+    // __asm__("int $0x4");
+    // framebuffer_clear();
+    // framebuffer_set_cursor(0, 0);
+    // framebuffer_write(0, 0, 'x', 0, 0xF);
+    // while (true);
+        
     load_gdt(&_gdt_gdtr);
     pic_remap();
     initialize_idt();
-    __asm__("int $0x4");
+    activate_keyboard_interrupt();
     framebuffer_clear();
     framebuffer_set_cursor(0, 0);
-    framebuffer_write(0, 0, 'x', 0, 0xF);
-    while (true);
+    framebuffer_write(0, 0, '\0', 0xF, 0);
         
-    // int col = 0;
-    // keyboard_state_activate();
-    // while (true) {
-    //      char c;
-    //      get_keyboard_buffer(&c);
-    //      framebuffer_write(0, col++, c, 0xF, 0);
-    // }
-
-
+    keyboard_state_activate();
+    while(true);
 }
