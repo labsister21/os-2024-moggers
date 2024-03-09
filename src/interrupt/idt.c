@@ -32,7 +32,7 @@ void set_interrupt_gate(uint8_t int_vector, void *handler_address, uint16_t gdt_
     idt_int_gate->_r_bit_2 = INTERRUPT_GATE_R_BIT_2;
     idt_int_gate->_r_bit_3 = INTERRUPT_GATE_R_BIT_3;
     idt_int_gate->gate_32 = 1;
-    idt_int_gate->present = 1;
+    idt_int_gate->valid_bit = 1;
 }
 
 extern void* isr_stub_table[];

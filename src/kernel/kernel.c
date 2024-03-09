@@ -32,10 +32,10 @@ void kernel_setup(void) {
     load_gdt(&_gdt_gdtr);
     pic_remap();
     initialize_idt();
-    framebuffer_clear();
-    framebuffer_write(0, 0, 'x', 0, 0xF);
-    framebuffer_set_cursor(0, 0);
     __asm__("int $0x4");
+    framebuffer_clear();
+    framebuffer_set_cursor(0, 0);
+    framebuffer_write(0, 0, 'x', 0, 0xF);
     while (true);
         
     // int col = 0;
