@@ -52,8 +52,42 @@ void kernel_setup(void) {
     // while(true);
 
     initialize_filesystem_fat32();
+    struct FAT32DriverRequest request = {
+        .buffer_size = 0,
+        .name = {'e','d','\0'},
+        .parent_cluster_number = ROOT_CLUSTER_NUMBER,
+    };
+
+    uint8_t res = write(request);
+    framebuffer_set_cursor(0, 0);
+    framebuffer_write(0, 0, '0'+res, 0xF, 0);
+
+    struct FAT32DriverRequest request2 = {
+        .buffer_size = 0,
+        .name = {'e','d', '2', '\0'},
+        .parent_cluster_number = ROOT_CLUSTER_NUMBER,
+    };
+    res = write(request2);
+    framebuffer_set_cursor(0, 1);
+    framebuffer_write(0, 1, '0'+res, 0xF, 0);
+
+    char input[1000];
+    for(int i=0; i<100; i++){
+        input[i] = 'a';
+    }
+    struct FAT32DriverRequest request3 = {
+        .buf = input,
+        .buffer_size = 1000,
+        .name = {'e','d', '3', '\0'},
+        .ext = {'t','x','t'},
+        .parent_cluster_number = 0x3,
+    };
+
+    res = write(request3);
+    framebuffer_set_cursor(0, 2);
+    framebuffer_write(0, 2, '0'+res, 0xF, 0);
     // struct BlockBuffer b;
     // for (int i = 0; i < 512; i++) b.buf[i] = i % 16;
-    // write_blocks(&b, 17, 1);
+    // write_blocks(&b, 16, 1);
     while (true);
 }
