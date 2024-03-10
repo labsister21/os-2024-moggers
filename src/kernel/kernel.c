@@ -7,6 +7,8 @@
 #include "interrupt/idt.h"
 #include "interrupt/interrupt.h"
 #include "keyboard/keyboard.h"
+#include "filesystem/disk.h"
+#include "filesystem/fat32.h"
 
 
 void kernel_setup(void) {
@@ -46,6 +48,12 @@ void kernel_setup(void) {
     framebuffer_set_cursor(0, 0);
     framebuffer_write(0, 0, '\0', 0xF, 0);
         
-    keyboard_state_activate();
-    while(true);
+    // keyboard_state_activate();
+    // while(true);
+
+    initialize_filesystem_fat32();
+    // struct BlockBuffer b;
+    // for (int i = 0; i < 512; i++) b.buf[i] = i % 16;
+    // write_blocks(&b, 17, 1);
+    while (true);
 }

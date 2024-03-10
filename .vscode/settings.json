@@ -5,6 +5,8 @@
         "stdint.h": "c",
         "stddef.h": "c",
         "keyboard.h": "c",
-        "string.h": "c"
+        "string.h": "c",
+        "random": "c",
+        "*.tcc": "c"
     },
 }
