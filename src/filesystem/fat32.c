@@ -211,12 +211,12 @@ int8_t write(struct FAT32DriverRequest request){
     // is dir full : uncategorized
     if(isFull) return -1;
 
-    bool isExist = true;
+    bool isExist = false;
     // check if file name & ext already exist
     for(i=2; i<64; i++){
         if(memcmp(driver_state.dir_table_buf.table[i].name, request.name, 8) == 0 && // check name
            memcmp(driver_state.dir_table_buf.table[i].ext, request.ext, 3) == 0){ // check ext
-            isExist = false;
+            isExist = true;
             break;
            }
     }
@@ -327,16 +327,110 @@ int8_t delete(__attribute__((unused)) struct FAT32DriverRequest request ){
 
     int i;
     bool isExist = false;
-    // check if file name & ext already exist
+    bool isFolder = false;
+    uint32_t cluster_number = 0;
+    uint32_t entry_row = 0;
+    // check if file name & ext exist
     for(i=2; i<64; i++){
         if(memcmp(driver_state.dir_table_buf.table[i].name, request.name, 8) == 0 && // check name
            memcmp(driver_state.dir_table_buf.table[i].ext, request.ext, 3) == 0){ // check ext
             isExist = true;
+
+            // get file / folder location in Table Allication
+            entry_row = i;
+
+            // get the cluster_number in FAT Table
+            uint16_t cluster_high = driver_state.dir_table_buf.table[i].cluster_high;
+            uint16_t cluster_low = driver_state.dir_table_buf.table[i].cluster_low;
+            cluster_number = (cluster_high << 16) + cluster_low;
+            
+            // check file / folder
+            if(driver_state.dir_table_buf.table[i].attribute == ATTR_SUBDIRECTORY){
+                isFolder = true;
+            }
             break;
            }
     }
+
     // is file not exist
     if(!isExist) return 1;
 
+    // handle kasus folder
+    if(isFolder){
+        // load directory to delete
+        struct FAT32DirectoryTable target_dir;
+        read_clusters(target_dir.table, cluster_number, 1);
+
+        // check if folder empty or not
+        // --- cek definisi folder kosonglagi di spek
+        bool isEmpty = true;
+        int i;
+        for(i=2; i<64; i++){
+            if(target_dir.table[i].user_attribute == UATTR_NOT_EMPTY){
+                isEmpty = false;
+                break;
+            }
+        }
+
+        // jika folder tidak kosong
+        if(!isEmpty) return 2;
+
+        // delete from parent table
+
+        // hapus folder name
+        memset(driver_state.dir_table_buf.table[entry_row].name, 0x00, sizeof(driver_state.dir_table_buf.table[entry_row].name));
+        // hapus attribute (file type: file / folder)
+        driver_state.dir_table_buf.table[entry_row].attribute = FAT32_FAT_EMPTY_ENTRY;
+        // hapus user attribute
+        driver_state.dir_table_buf.table[entry_row].user_attribute = FAT32_FAT_EMPTY_ENTRY;
+        // write to table cluster
+        write_clusters(driver_state.dir_table_buf.table, request.parent_cluster_number, 1);
+
+        // delete the folder itself
+        memset(target_dir.table[0].name, 0x00, sizeof(driver_state.dir_table_buf.table[entry_row].name));
+        memset(target_dir.table[1].name, 0x00, sizeof(driver_state.dir_table_buf.table[entry_row].name));
+        // hapus attribute (file type: file / folder)
+        target_dir.table[0].attribute = FAT32_FAT_EMPTY_ENTRY;
+        target_dir.table[1].attribute = FAT32_FAT_EMPTY_ENTRY;
+        // hapus user attribute
+        target_dir.table[0].user_attribute = FAT32_FAT_EMPTY_ENTRY;
+        target_dir.table[1].user_attribute = FAT32_FAT_EMPTY_ENTRY;
+        // write to table cluster
+        write_clusters(target_dir.table, cluster_number, 1);
+
+        // delete from FAT
+        driver_state.fat_table.cluster_map[cluster_number] = FAT32_FAT_EMPTY_ENTRY;
+        write_clusters(driver_state.fat_table.cluster_map, FAT_CLUSTER_NUMBER, 1);
+
+        // succeed
+        return 0;
+    }
+
+    // handle kasus file
+
+    // hapus file name
+    memset(driver_state.dir_table_buf.table[entry_row].name, 0x00, sizeof(driver_state.dir_table_buf.table[entry_row].name));
+    // hapus extention
+    memset(driver_state.dir_table_buf.table[entry_row].ext, 0x00, sizeof(driver_state.dir_table_buf.table[entry_row].ext));
+    // hapus attribute (file type: file / folder)
+    driver_state.dir_table_buf.table[entry_row].attribute = FAT32_FAT_EMPTY_ENTRY;
+    // hapus user attribute
+    driver_state.dir_table_buf.table[entry_row].user_attribute = FAT32_FAT_EMPTY_ENTRY;
+    // write to table cluster
+    write_clusters(driver_state.dir_table_buf.table, request.parent_cluster_number, 1);
+
+    // delete file and all its cluster from FAT table
+    uint32_t next_cluster = driver_state.fat_table.cluster_map[cluster_number];
+    driver_state.fat_table.cluster_map[cluster_number] = FAT32_FAT_EMPTY_ENTRY;
+
+    while(next_cluster != FAT32_FAT_END_OF_FILE){
+        cluster_number = next_cluster;
+        next_cluster = driver_state.fat_table.cluster_map[cluster_number];
+        driver_state.fat_table.cluster_map[cluster_number] = FAT32_FAT_EMPTY_ENTRY;
+    }
+    driver_state.fat_table.cluster_map[next_cluster] = FAT32_FAT_EMPTY_ENTRY;
+    write_clusters(driver_state.fat_table.cluster_map, FAT_CLUSTER_NUMBER, 1);
     
+    // succeed
+    return 0;
 }

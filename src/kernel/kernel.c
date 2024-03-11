@@ -48,7 +48,7 @@ void kernel_setup(void) {
     framebuffer_set_cursor(0, 0);
     framebuffer_write(0, 0, '\0', 0xF, 0);
         
-    // keyboard_state_activate();
+    keyboard_state_activate();
     // while(true);
 
     initialize_filesystem_fat32();
@@ -84,6 +84,11 @@ void kernel_setup(void) {
     };
 
     res = write(request3);
+    framebuffer_set_cursor(0, 2);
+    framebuffer_write(0, 2, '0'+res, 0xF, 0);
+
+
+    res = delete(request2);
     framebuffer_set_cursor(0, 2);
     framebuffer_write(0, 2, '0'+res, 0xF, 0);
     // struct BlockBuffer b;
