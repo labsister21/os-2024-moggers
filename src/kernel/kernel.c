@@ -54,7 +54,7 @@ void kernel_setup(void) {
     initialize_filesystem_fat32();
     struct FAT32DriverRequest request = {
         .buffer_size = 0,
-        .name = {'e','d','\0'},
+        .name = {'e','d','\0', '\0', '\0', '\0', '\0', '\0'},
         .parent_cluster_number = ROOT_CLUSTER_NUMBER,
     };
 
@@ -64,21 +64,28 @@ void kernel_setup(void) {
 
     struct FAT32DriverRequest request2 = {
         .buffer_size = 0,
-        .name = {'e','d', '2', '\0'},
+        .name = {'e','d', '2', '\0', '\0', '\0'},
         .parent_cluster_number = ROOT_CLUSTER_NUMBER,
     };
     res = write(request2);
     framebuffer_set_cursor(0, 1);
     framebuffer_write(0, 1, '0'+res, 0xF, 0);
 
-    char input[1000];
-    for(int i=0; i<100; i++){
-        input[i] = 'a';
+    int n = 4300;
+    char input[n];
+    for(int i=0; i<n; i++){
+        if(i < 2048)
+            input[i] = 'a';
+        else if(i < 4096)
+            input[i] = 'c';
+        else
+            input[i] = 'b';
     }
+
     struct FAT32DriverRequest request3 = {
         .buf = input,
-        .buffer_size = 1000,
-        .name = {'e','d', '3', '\0'},
+        .buffer_size = n,
+        .name = {'e','d', '3', '\0', '\0', '\0'},
         .ext = {'t','x','t'},
         .parent_cluster_number = 0x3,
     };
