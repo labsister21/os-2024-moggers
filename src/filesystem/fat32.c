@@ -28,20 +28,42 @@ uint32_t cluster_to_lba(uint32_t cluster){
 
 void init_directory_table(struct FAT32DirectoryTable *dir_table, char *name, uint32_t parent_dir_cluster){
     struct FAT32DirectoryEntry dir_entry = {
+        .ext = { 0x0 },
         .attribute = ATTR_SUBDIRECTORY,
         .user_attribute = UATTR_NOT_EMPTY,
+
+        .undelete = 0x0,
+        .create_time = 0x0,
+        .create_date = 0x0,
+        .access_date = 0x0,
+
+        .modified_time = 0x0,
+        .modified_date = 0x0,
+
         .cluster_high = parent_dir_cluster >> 16,
         .cluster_low = parent_dir_cluster,
+
         .filesize = 0
     };
     memcpy(dir_entry.name, name, sizeof(dir_entry.name));
 
     struct FAT32DirectoryEntry parent_entry = {
-        .name = {'.', '.', '\0'},
+        .name = {'.', '.', '\0', '\0', '\0', '\0', '\0', '\0'},
+        .ext = {0x00},
         .attribute = ATTR_SUBDIRECTORY,
         .user_attribute = UATTR_NOT_EMPTY,
+
+        .undelete = 0x0,
+        .create_time = 0x0,
+        .create_date = 0x0,
+        .access_date = 0x0,
+
+        .modified_time = 0x0,
+        .modified_date = 0x0,
+
         .cluster_high = parent_dir_cluster >> 16,
         .cluster_low = parent_dir_cluster,
+
         .filesize = 0
     };
     
@@ -72,8 +94,10 @@ void create_fat32(void){
 
     // initialize root directory
     struct FAT32DirectoryTable root_dir;
+    memset(root_dir.table, 0x00, sizeof(root_dir.table));
     
-    init_directory_table(&root_dir, "root", ROOT_CLUSTER_NUMBER);
+    char dir_name[] = {'r', 'o', 'o', 't', '\0', '\0', '\0', '\0'};
+    init_directory_table(&root_dir, dir_name, ROOT_CLUSTER_NUMBER);
     write_clusters(root_dir.table, ROOT_CLUSTER_NUMBER, 1);
 
     // init driver
@@ -244,6 +268,7 @@ int8_t write(struct FAT32DriverRequest request){
 
         // update parent directory
         struct FAT32DirectoryTable new_dir;
+        memset(new_dir.table, 0x00, sizeof(new_dir.table));
         init_directory_table(&new_dir, request.name,  request.parent_cluster_number);
         new_dir.table[0].cluster_high = cluster_number >> 16;
         new_dir.table[0].cluster_low = cluster_number;
@@ -276,9 +301,10 @@ int8_t write(struct FAT32DriverRequest request){
     }
     uint32_t start_cluster = temp_cluster;
     int file_part = 0;
+
     // write to cluster
-    write_clusters((uint8_t*) request.buf + CLUSTER_SIZE*file_part, temp_cluster, 1);
-    driver_state.fat_table.cluster_map[temp_cluster] = FAT32_FAT_END_OF_FILE;
+    write_clusters((uint32_t*) request.buf + CLUSTER_SIZE*file_part, start_cluster, 1);
+    driver_state.fat_table.cluster_map[start_cluster] = FAT32_FAT_END_OF_FILE;
     file_part++;
 
     // fill all cluster
@@ -289,21 +315,33 @@ int8_t write(struct FAT32DriverRequest request){
             temp_cluster = i;
             write_clusters((uint8_t*) request.buf + CLUSTER_SIZE*file_part, temp_cluster, 1);
             driver_state.fat_table.cluster_map[i] = FAT32_FAT_END_OF_FILE;
+            
             file_part++;
-            break;
+            cluster_needed--;
         }
     }
 
-    // write update cluster
+    // write update FAT cluster
     write_clusters(driver_state.fat_table.cluster_map, FAT_CLUSTER_NUMBER, 1);
 
     // update directory table
     struct FAT32DirectoryEntry new_file = {
         .name = {request.name[0], request.name[1], request.name[2], request.name[3], request.name[4], request.name[5], request.name[6], request.name[7]},
         .ext = {request.ext[0], request.ext[1], request.ext[2]},
+        .attribute = 0x0,
         .user_attribute = UATTR_NOT_EMPTY,
+
+        .undelete = 0x0,
+        .create_time = 0x0,
+        .create_date = 0x0,
+        .access_date = 0x0,
+
+        .modified_time = 0x0,
+        .modified_date = 0x0,
+
         .cluster_high = start_cluster >> 16,
         .cluster_low = start_cluster,
+
         .filesize = request.buffer_size
     };
     driver_state.dir_table_buf.table[entry_row] = new_file;
@@ -359,6 +397,7 @@ int8_t delete(__attribute__((unused)) struct FAT32DriverRequest request ){
     if(isFolder){
         // load directory to delete
         struct FAT32DirectoryTable target_dir;
+        memset(target_dir.table, 0x00, sizeof(target_dir.table));
         read_clusters(target_dir.table, cluster_number, 1);
 
         // check if folder empty or not
