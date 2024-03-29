@@ -71,7 +71,7 @@ void kernel_setup(void) {
     framebuffer_set_cursor(0, 1);
     framebuffer_write(0, 1, '0'+res, 0xF, 0);
 
-    int n = 4300;
+    int n = 4304;
     char input[n];
     for(int i=0; i<n; i++){
         if(i < 2048)
@@ -81,6 +81,7 @@ void kernel_setup(void) {
         else
             input[i] = 'b';
     }
+    input[n-1] = '\0';
 
     struct FAT32DriverRequest request3 = {
         .buf = input,
@@ -96,8 +97,33 @@ void kernel_setup(void) {
 
 
     res = delete(request2);
-    framebuffer_set_cursor(0, 2);
-    framebuffer_write(0, 2, '0'+res, 0xF, 0);
+    framebuffer_set_cursor(0, 3);
+    framebuffer_write(0, 3, '0'+res, 0xF, 0);
+
+    int n2 = 3000;
+    char input2[n2];
+    for(int i=0; i<n2; i++){
+        if (i < 2048)
+            input2[i] = 'x';
+        else
+            input2[i] = 'y';
+    }
+
+    struct FAT32DriverRequest request4 = {
+        .buf = input2,
+        .buffer_size = n2,
+        .name = {'e','d', '2', '\0', '\0', '\0'},
+        .ext = {'p','h','p'},
+        .parent_cluster_number = ROOT_CLUSTER_NUMBER,
+    };
+
+    res = write(request4);
+    framebuffer_set_cursor(0, 4);
+    framebuffer_write(0, 4, '0'+res, 0xF, 0);
+
+    res = delete(request3);
+    framebuffer_set_cursor(0, 5);
+    framebuffer_write(0, 5, '0'+res, 0xF, 0);
     // struct BlockBuffer b;
     // for (int i = 0; i < 512; i++) b.buf[i] = i % 16;
     // write_blocks(&b, 16, 1);
