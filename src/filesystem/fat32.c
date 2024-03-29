@@ -211,6 +211,9 @@ int8_t read(struct FAT32DriverRequest request){
 }
 
 int8_t write(struct FAT32DriverRequest request){
+    // TODO: tambah handling input biar data integrity kejaga.
+
+
     read_clusters(driver_state.dir_table_buf.table, request.parent_cluster_number, 1);
 
     // check if parent directory is not a directory
@@ -302,18 +305,30 @@ int8_t write(struct FAT32DriverRequest request){
     uint32_t start_cluster = temp_cluster;
     int file_part = 0;
 
+    // create cluster buffer
+    struct ClusterBuffer cluster_buffer;
+    memset(cluster_buffer.buf, 0x0, CLUSTER_SIZE);
+    memcpy(cluster_buffer.buf, (uint8_t*) request.buf + CLUSTER_SIZE*file_part, CLUSTER_SIZE);
+    
     // write to cluster
-    write_clusters((uint32_t*) request.buf + CLUSTER_SIZE*file_part, start_cluster, 1);
+    write_clusters((uint8_t*) request.buf + CLUSTER_SIZE*file_part, start_cluster, 1);
     driver_state.fat_table.cluster_map[start_cluster] = FAT32_FAT_END_OF_FILE;
     file_part++;
 
     // fill all cluster
-    for(i=temp_cluster; i<CLUSTER_SIZE && cluster_needed > 0; i++){
+    for(i=start_cluster+1; i<CLUSTER_SIZE && cluster_needed > 0; i++){
         if(driver_state.fat_table.cluster_map[i] == FAT32_FAT_EMPTY_ENTRY){
             // directly write
             driver_state.fat_table.cluster_map[temp_cluster] = i;
             temp_cluster = i;
-            write_clusters((uint8_t*) request.buf + CLUSTER_SIZE*file_part, temp_cluster, 1);
+            
+            memset(cluster_buffer.buf, 0x0, sizeof(cluster_buffer.buf));
+
+            int cluster_buffer_size = CLUSTER_SIZE;
+            if(cluster_needed == 1) cluster_buffer_size = mod;
+            memcpy(cluster_buffer.buf, (uint8_t*) request.buf + CLUSTER_SIZE*file_part, cluster_buffer_size);
+            
+            write_clusters(cluster_buffer.buf, temp_cluster, 1);
             driver_state.fat_table.cluster_map[i] = FAT32_FAT_END_OF_FILE;
             
             file_part++;
@@ -447,6 +462,8 @@ int8_t delete(__attribute__((unused)) struct FAT32DriverRequest request ){
 
     // handle kasus file
 
+    /* REFACTORING */
+    /*
     // hapus file name
     memset(driver_state.dir_table_buf.table[entry_row].name, 0x00, sizeof(driver_state.dir_table_buf.table[entry_row].name));
     // hapus extention
@@ -455,20 +472,31 @@ int8_t delete(__attribute__((unused)) struct FAT32DriverRequest request ){
     driver_state.dir_table_buf.table[entry_row].attribute = FAT32_FAT_EMPTY_ENTRY;
     // hapus user attribute
     driver_state.dir_table_buf.table[entry_row].user_attribute = FAT32_FAT_EMPTY_ENTRY;
+    */
+    memset(&driver_state.dir_table_buf.table[entry_row], 0x00, sizeof(driver_state.dir_table_buf.table[entry_row]));
+
     // write to table cluster
     write_clusters(driver_state.dir_table_buf.table, request.parent_cluster_number, 1);
 
     // delete file and all its cluster from FAT table
     uint32_t next_cluster = driver_state.fat_table.cluster_map[cluster_number];
     driver_state.fat_table.cluster_map[cluster_number] = FAT32_FAT_EMPTY_ENTRY;
+    
+    struct ClusterBuffer cluster_buffer;
+    memset(cluster_buffer.buf, 0x0, CLUSTER_SIZE);
+    write_clusters(cluster_buffer.buf, cluster_number, 1);
 
     while(next_cluster != FAT32_FAT_END_OF_FILE){
         cluster_number = next_cluster;
         next_cluster = driver_state.fat_table.cluster_map[cluster_number];
         driver_state.fat_table.cluster_map[cluster_number] = FAT32_FAT_EMPTY_ENTRY;
+
+        write_clusters(cluster_buffer.buf, cluster_number, 1);
     }
     driver_state.fat_table.cluster_map[next_cluster] = FAT32_FAT_EMPTY_ENTRY;
     write_clusters(driver_state.fat_table.cluster_map, FAT_CLUSTER_NUMBER, 1);
+
+    write_clusters(cluster_buffer.buf, cluster_number, 1);
     
     // succeed
     return 0;
