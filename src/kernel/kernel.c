@@ -9,9 +9,14 @@
 #include "keyboard/keyboard.h"
 #include "filesystem/disk.h"
 #include "filesystem/fat32.h"
+#include "paging/paging.h"
 
 
 void kernel_setup(void) {
+
+    *((uint8_t*) 0x500000) = 1;
+
+    
     /*
     uint32_t a;
     uint32_t volatile b = 0x0000BABE;
@@ -39,7 +44,8 @@ void kernel_setup(void) {
     // framebuffer_set_cursor(0, 0);
     // framebuffer_write(0, 0, 'x', 0, 0xF);
     // while (true);
-        
+    
+    /*
     load_gdt(&_gdt_gdtr);
     pic_remap();
     initialize_idt();
@@ -124,6 +130,9 @@ void kernel_setup(void) {
     res = delete(request3);
     framebuffer_set_cursor(0, 5);
     framebuffer_write(0, 5, '0'+res, 0xF, 0);
+    */
+
+
     // struct BlockBuffer b;
     // for (int i = 0; i < 512; i++) b.buf[i] = i % 16;
     // write_blocks(&b, 16, 1);

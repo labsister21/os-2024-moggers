@@ -21,7 +21,8 @@ __attribute__((aligned(0x1000))) struct PageDirectory _paging_kernel_page_direct
 };
 
 static struct PageManagerState page_manager_state = {
-    .page_frame_map = {[0 ... PAGE_FRAME_MAX_COUNT-1] = FALSE},
+    .page_frame_map = {[0 ... PAGE_FRAME_MAX_COUNT-1] = false},
+    .free_page_frame_count = PAGE_FRAME_MAX_COUNT,
     // TODO: Fill in if needed ...
 };
 
@@ -47,6 +48,9 @@ void flush_single_tlb(void *virtual_addr) {
 // TODO: Implement
 bool paging_allocate_check(uint32_t amount) {
     // TODO: Check whether requested amount is available
+    if(amount > page_manager_state.free_page_frame_count)
+        return false;
+
     return true;
 }
 
@@ -62,6 +66,39 @@ bool paging_allocate_user_page_frame(struct PageDirectory *page_dir, void *virtu
      *     > user bit       true
      *     > pagesize 4 mb  true
      */ 
+
+    // using first fit algorithm - ketemu pertama x langsung dipake
+    uint32_t free_physical_frame_index = 0;
+    int i;
+    for(i=0; i<PAGE_FRAME_MAX_COUNT; i++){
+        if(!page_manager_state.page_frame_map[i]){
+            page_manager_state.page_frame_map[i] = true;
+            break;
+        }
+    }
+
+    // error handling no free space;
+    if(i == PAGE_FRAME_MAX_COUNT)
+        return -1;
+
+    struct PageDirectoryEntryFlag user_flag = {
+        .present_bit = true,
+        .write_bit = true,
+        .user_supervisor_bit = true,
+        .pwt_bit = 0,
+        .pcd_bit = 0,
+        .accessed_bit = 0,
+        .dirty_bit = 0,
+        .use_pagesize_4_mb = true,
+    };
+
+    update_page_directory_entry(
+        page_dir,
+        (void *) free_physical_frame_index,
+        virtual_addr,
+        user_flag
+    );
+
     return true;
 }
 
@@ -71,5 +108,40 @@ bool paging_free_user_page_frame(struct PageDirectory *page_dir, void *virtual_a
      * - Use the page_dir.table values to check mapped physical frame
      * - Remove the entry by setting it into 0
      */
+
+    uint32_t page_index = ((uint32_t) virtual_addr >> 22) & 0x3FF;
+    uint32_t physical_address_index = 0;
+
+    int i;
+    for(i=0; i<PAGE_FRAME_MAX_COUNT; i++){
+        if(page_dir->table[page_index].lower_address == (((uint32_t) i >> 22) & 0x3FF)){
+            physical_address_index = i;
+            page_manager_state.page_frame_map[i] = false;
+            break;
+        }
+    }
+
+    // error handling not found;
+    if(i == PAGE_FRAME_MAX_COUNT)
+        return -1;
+
+    struct PageDirectoryEntryFlag user_flag = {
+        .present_bit = true,
+        .write_bit = true,
+        .user_supervisor_bit = true,
+        .pwt_bit = 0,
+        .pcd_bit = 0,
+        .accessed_bit = 0,
+        .dirty_bit = 0,
+        .use_pagesize_4_mb = true,
+    };
+
+
+    update_page_directory_entry(
+        page_dir,
+        (void *) physical_address_index,
+        virtual_addr,
+        user_flag
+    );
     return true;
 }
