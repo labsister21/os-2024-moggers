@@ -9,6 +9,7 @@
         "random": "c",
         "*.tcc": "c",
         "cmath": "c",
-        "chrono": "c"
+        "chrono": "c",
+        "disk.h": "c"
     },
 }
