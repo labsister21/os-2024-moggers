@@ -2,9 +2,9 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#include "filesystem/fat32.h"
-#include "filesystem/disk.h"
-#include "std/string.h"
+#include "../filesystem/fat32.h"
+#include "../filesystem/disk.h"
+#include "../std/string.h"
 
 // Global variable
 uint8_t *image_storage;

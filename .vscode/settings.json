@@ -1,7 +1,6 @@
 {
     "debug.onTaskErrors": "debugAnyway",
     "files.associations": {
-        "*.mq5": "mq4",
         "stdint.h": "c",
         "stddef.h": "c",
         "keyboard.h": "c",
@@ -10,6 +9,10 @@
         "*.tcc": "c",
         "cmath": "c",
         "chrono": "c",
-        "disk.h": "c"
+        "disk.h": "c",
+        "fat32.h": "c",
+        "limits": "c",
+        "sstream": "c",
+        "cstdio": "c"
     },
 }

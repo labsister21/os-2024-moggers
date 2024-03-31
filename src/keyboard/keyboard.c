@@ -55,32 +55,31 @@ void keyboard_isr(void) {
     if(keyboard_state.keyboard_input_on){
         uint16_t mapped = keyboard_scancode_1_to_ascii_map[scancode];
         keyboard_state.keyboard_buffer = mapped;
-
-        char c;
-        get_keyboard_buffer(&c);
-        
-        if(c == '\n'){
-            keyboard_state.row++;
-            keyboard_state.col = 0;
-            framebuffer_set_cursor(keyboard_state.row, keyboard_state.col);
-            framebuffer_write(keyboard_state.row, keyboard_state.col, '\0', 0xF, 0x0);
-        } else if(c == '\t') {
-            uint8_t tab_size = 4;
-            for(uint8_t i=0; i<tab_size; i++){
-                framebuffer_write(keyboard_state.row, keyboard_state.col++, '\0', 0xF, 0x0);
-                framebuffer_set_cursor(keyboard_state.row, keyboard_state.col);
-                framebuffer_write(keyboard_state.row, keyboard_state.col, '\0', 0xF, 0x0);
-            }
-        } else if(c == '\b'){
-            keyboard_state.col--;
-            framebuffer_set_cursor(keyboard_state.row, keyboard_state.col);
-            framebuffer_write(keyboard_state.row, keyboard_state.col, '\0', 0xF, 0x0);
-        } 
-        else if(c != 0x00){
-            framebuffer_write(keyboard_state.row, keyboard_state.col++, c, 0xF, 0x0);
-            framebuffer_set_cursor(keyboard_state.row, keyboard_state.col);
-            framebuffer_write(keyboard_state.row, keyboard_state.col, '\0', 0xF, 0x0);
-        }
     }
     pic_ack(PIC1_OFFSET + IRQ_KEYBOARD);
 }
+
+/*
+if(c == '\n'){
+    keyboard_state.row++;
+    keyboard_state.col = 0;
+    framebuffer_set_cursor(keyboard_state.row, keyboard_state.col);
+    framebuffer_write(keyboard_state.row, keyboard_state.col, '\0', 0xF, 0x0);
+} else if(c == '\t') {
+    uint8_t tab_size = 4;
+    for(uint8_t i=0; i<tab_size; i++){
+        framebuffer_write(keyboard_state.row, keyboard_state.col++, '\0', 0xF, 0x0);
+        framebuffer_set_cursor(keyboard_state.row, keyboard_state.col);
+        framebuffer_write(keyboard_state.row, keyboard_state.col, '\0', 0xF, 0x0);
+    }
+} else if(c == '\b'){
+    keyboard_state.col--;
+    framebuffer_set_cursor(keyboard_state.row, keyboard_state.col);
+    framebuffer_write(keyboard_state.row, keyboard_state.col, '\0', 0xF, 0x0);
+} 
+else if(c != 0x00){
+    framebuffer_write(keyboard_state.row, keyboard_state.col++, c, 0xF, 0x0);
+    framebuffer_set_cursor(keyboard_state.row, keyboard_state.col);
+    framebuffer_write(keyboard_state.row, keyboard_state.col, '\0', 0xF, 0x0);
+}
+*/

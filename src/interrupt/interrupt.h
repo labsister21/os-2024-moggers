@@ -51,7 +51,7 @@
 #define IRQ_FLOPPY_DISK  6
 #define IRQ_LPT1_SPUR    7
 
-// PIC Slave
+// PIC 
 #define IRQ_CMOS         8
 #define IRQ_PERIPHERAL_1 9
 #define IRQ_PERIPHERAL_2 10

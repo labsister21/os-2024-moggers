@@ -66,13 +66,14 @@ bool paging_allocate_user_page_frame(struct PageDirectory *page_dir, void *virtu
      *     > user bit       true
      *     > pagesize 4 mb  true
      */ 
-
+    
     // using first fit algorithm - ketemu pertama x langsung dipake
     uint32_t free_physical_frame_index = 0;
     int i;
     for(i=0; i<PAGE_FRAME_MAX_COUNT; i++){
         if(!page_manager_state.page_frame_map[i]){
             page_manager_state.page_frame_map[i] = true;
+            page_manager_state.free_page_frame_count--;
             break;
         }
     }
@@ -117,6 +118,7 @@ bool paging_free_user_page_frame(struct PageDirectory *page_dir, void *virtual_a
         if(page_dir->table[page_index].lower_address == (((uint32_t) i >> 22) & 0x3FF)){
             physical_address_index = i;
             page_manager_state.page_frame_map[i] = false;
+            page_manager_state.free_page_frame_count++;
             break;
         }
     }
