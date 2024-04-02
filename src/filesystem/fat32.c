@@ -420,7 +420,7 @@ int8_t delete(__attribute__((unused)) struct FAT32DriverRequest request ){
         bool isEmpty = true;
         int i;
         for(i=2; i<64; i++){
-            if(target_dir.table[i].user_attribute == UATTR_NOT_EMPTY){
+            if(target_dir.table[i].user_attribute != UATTR_NOT_EMPTY){
                 isEmpty = false;
                 break;
             }
