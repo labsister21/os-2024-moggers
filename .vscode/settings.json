@@ -1,6 +1,7 @@
 {
     "debug.onTaskErrors": "debugAnyway",
     "files.associations": {
+        "*.mq5": "mq4",
         "stdint.h": "c",
         "stddef.h": "c",
         "keyboard.h": "c",
@@ -13,6 +14,12 @@
         "fat32.h": "c",
         "limits": "c",
         "sstream": "c",
-        "cstdio": "c"
+        "cstdio": "c",
+        "syscall_command.h": "c",
+        "cat.h": "c",
+        "ls.h": "c",
+        "user-shell.h": "c",
+        "cd.h": "c",
+        "typeinfo": "c"
     },
 }

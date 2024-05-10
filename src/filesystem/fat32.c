@@ -141,7 +141,7 @@ int8_t read_directory(struct FAT32DriverRequest request){
         // check dir name
         if(memcmp(driver_state.dir_table_buf.table[i].name, request.name, 8) == 0){
             // check if its a file or a folder
-            if(driver_state.dir_table_buf.table[i].user_attribute != ATTR_SUBDIRECTORY){
+            if(driver_state.dir_table_buf.table[i].attribute != ATTR_SUBDIRECTORY){
                 // return not a folder
                 return 1;
             }
@@ -178,7 +178,7 @@ int8_t read(struct FAT32DriverRequest request){
         if(memcmp(driver_state.dir_table_buf.table[i].name, request.name, 8) == 0 && // check filename
             memcmp(driver_state.dir_table_buf.table[i].ext, request.ext, 3) == 0){ // check extention
                 // check if its a file or a folder
-                if(driver_state.dir_table_buf.table[i].user_attribute == ATTR_SUBDIRECTORY){
+                if(driver_state.dir_table_buf.table[i].attribute == ATTR_SUBDIRECTORY){
                     // return not a file
                     return 1;
                 }
@@ -368,7 +368,7 @@ int8_t write(struct FAT32DriverRequest request){
     return 0;
 }
 
-int8_t delete(__attribute__((unused)) struct FAT32DriverRequest request ){
+int8_t delete( struct FAT32DriverRequest request ){
     read_clusters(driver_state.dir_table_buf.table, request.parent_cluster_number, 1);
 
     // check if parent directory is not a directory

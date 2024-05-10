@@ -69,12 +69,21 @@ inserter:
 user-shell:
 	@$(ASM) $(AFLAGS) $(SOURCE_FOLDER)/user_mode/crt0.s -o crt0.o
 	@$(CC)  $(CFLAGS) -fno-pie $(SOURCE_FOLDER)/user_mode/user-shell.c -o user-shell.o
+	@$(CC)  $(CFLAGS) -fno-pie $(SOURCE_FOLDER)/user_mode/command_list/cat.c -o cat.o
+	@$(CC)  $(CFLAGS) -fno-pie $(SOURCE_FOLDER)/user_mode/command_list/ls.c -o ls.o
+	@$(CC)  $(CFLAGS) -fno-pie $(SOURCE_FOLDER)/user_mode/command_list/mkdir.c -o mkdir.o
+	@$(CC)  $(CFLAGS) -fno-pie $(SOURCE_FOLDER)/user_mode/command_list/cd.c -o cd.o
+	@$(CC)  $(CFLAGS) -fno-pie $(SOURCE_FOLDER)/user_mode/command_list/clear.c -o clear.o
+	@$(CC)  $(CFLAGS) -fno-pie $(SOURCE_FOLDER)/user_mode/command_list/help.c -o help.o
+	@$(CC)  $(CFLAGS) -fno-pie $(SOURCE_FOLDER)/user_mode/command_list/rm.c -o rm.o
+	@$(CC)  $(CFLAGS) -fno-pie $(SOURCE_FOLDER)/user_mode/command_list/mv.c -o mv.o
+	@$(CC)  $(CFLAGS) -fno-pie $(SOURCE_FOLDER)/user_mode/command_list/find.c -o find.o
 	@$(CC)  $(CFLAGS) -fno-pie $(SOURCE_FOLDER)/std/string.c -o string.o
 	@$(LIN) -T $(SOURCE_FOLDER)/user_mode/user-linker.ld -melf_i386 --oformat=binary \
-		crt0.o user-shell.o string.o -o $(OUTPUT_FOLDER)/shell
+		crt0.o user-shell.o cat.o ls.o mkdir.o cd.o clear.o help.o rm.o mv.o find.o string.o -o $(OUTPUT_FOLDER)/shell
 	@echo Linking object shell object files and generate flat binary...
 	@$(LIN) -T $(SOURCE_FOLDER)/user_mode/user-linker.ld -melf_i386 --oformat=elf32-i386\
-		crt0.o user-shell.o string.o -o $(OUTPUT_FOLDER)/shell_elf
+		crt0.o user-shell.o cat.o ls.o mkdir.o cd.o clear.o help.o rm.o mv.o find.o string.o -o $(OUTPUT_FOLDER)/shell_elf
 	@echo Linking object shell object files and generate ELF32 for debugging...
 	@size --target=binary bin/shell
 	@rm -f *.o
@@ -83,3 +92,5 @@ user-shell:
 insert-shell: inserter user-shell
 	@echo Inserting shell into root directory...
 	@cd $(OUTPUT_FOLDER); ./inserter shell 2 $(DISK_NAME).bin
+	@cd $(OUTPUT_FOLDER); ./inserter edbert 2 $(DISK_NAME).bin
+	@cd $(OUTPUT_FOLDER); ./inserter edbert2 2 $(DISK_NAME).bin

@@ -5,8 +5,6 @@
 
 struct KeyboardDriverState keyboard_state = {
     .keyboard_input_on = false,
-    .col = 0,
-    .row = 0,
 };
 
 const char keyboard_scancode_1_to_ascii_map[256] = {

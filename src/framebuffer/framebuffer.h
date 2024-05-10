@@ -9,6 +9,9 @@
 #define CURSOR_PORT_CMD    0x03D4
 #define CURSOR_PORT_DATA   0x03D5
 
+#define VGA_WIDTH   80
+#define VGA_HEIGHT  50
+
 /**
  * Terminal framebuffer
  * Resolution: 80x25
@@ -28,6 +31,8 @@
  * @param bg  Background color
  */
 void framebuffer_write(uint8_t row, uint8_t col, char c, uint8_t fg, uint8_t bg);
+
+uint16_t framebuffer_get_cursor_position(void);
 
 /**
  * Set cursor to specified location. Row and column starts from 0
