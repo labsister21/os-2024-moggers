@@ -20,6 +20,8 @@
         "ls.h": "c",
         "user-shell.h": "c",
         "cd.h": "c",
-        "typeinfo": "c"
+        "typeinfo": "c",
+        "stdbool.h": "c",
+        "interrupt.h": "c"
     },
 }

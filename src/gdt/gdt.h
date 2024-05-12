@@ -36,7 +36,7 @@ extern struct GDTR _gdt_gdtr;
  * @param segment_high  4-bit higher-bit segment limit
  * @param available_bit 1-bit contain free-use bit (AVL)
  * @param code_in_64bit 1-bit contain 64-bit code existence (L)
- * @param db_flag       1-bit contain operation size (D/B)
+ * @param db_flag       1   
  * @param granularity   1-bit contain scaling of segment limit field (G)
  * @param base_high     8-bit higher base address
  */
