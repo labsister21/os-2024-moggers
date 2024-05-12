@@ -122,32 +122,16 @@ bool paging_free_user_page_frame(struct PageDirectory *page_dir, void *virtual_a
             physical_address_index = i;
             page_manager_state.page_frame_map[i] = false;
             page_manager_state.free_page_frame_count++;
+
+            memset(&(*page_dir).table[page_index], 0x0, sizeof(struct PageDirectoryEntry));
             break;
         }
     }
 
     // error handling not found;
     if(i == PAGE_FRAME_MAX_COUNT)
-        return -1;
+        return false;
 
-    struct PageDirectoryEntryFlag user_flag = {
-        .present_bit = true,
-        .write_bit = true,
-        .user_supervisor_bit = true,
-        .pwt_bit = 0,
-        .pcd_bit = 0,
-        .accessed_bit = 0,
-        .dirty_bit = 0,
-        .use_pagesize_4_mb = true,
-    };
-
-
-    update_page_directory_entry(
-        page_dir,
-        (void *) physical_address_index,
-        virtual_addr,
-        user_flag
-    );
     return true;
 }
 
@@ -184,22 +168,14 @@ struct PageDirectory* paging_create_new_page_directory(void) {
 
             struct PageDirectory* new_directory = &page_directory_list[i];
 
-            struct PageDirectoryEntry p = {
+            struct PageDirectoryEntry new_entry = {
                 .flag.present_bit       = 1,
                 .flag.write_bit         = 1,
                 .flag.use_pagesize_4_mb = 1,
                 .lower_address          = 0,
-                
-                .global_page            = 0,
-                .higher_address         = 0,
-                .ignored                = 0,
-                .reserved               = 0,
-                .pat_support            = 0
             };
 
-            memcpy(new_directory, &p, sizeof(struct PageDirectoryEntry));
-
-            new_directory->table[0x300] = _paging_kernel_page_directory.table[0x300];
+            memcpy(&new_directory->table[0x300], &new_entry, sizeof(struct PageDirectoryEntry));
 
             return new_directory;
         }
@@ -220,7 +196,6 @@ bool paging_free_page_directory(struct PageDirectory *page_dir) {
 
             
             memset(page_dir, 0x0, sizeof(struct PageDirectory));
-            memset(page_directory_list[i].table, 0x0, sizeof(page_directory_list[i].table));
         }
     }
     return false;

@@ -37,10 +37,10 @@ void kernel_setup(void) {
         .parent_cluster_number = ROOT_CLUSTER_NUMBER,
         .buffer_size           = 0x100000,
     };
-    read(request);
+    // read(request);
 
     // Set TSS $esp pointer and jump into shell 
-    // set_tss_kernel_current_stack();
+    set_tss_kernel_current_stack();
 
     // Create & execute process 0
     // kernel_execute_user_program((uint8_t*) 0);

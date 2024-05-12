@@ -22,6 +22,7 @@
         "cd.h": "c",
         "typeinfo": "c",
         "stdbool.h": "c",
-        "interrupt.h": "c"
+        "interrupt.h": "c",
+        "gdt.h": "c"
     },
 }

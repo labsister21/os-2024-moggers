@@ -56,17 +56,17 @@
  */
 struct Context {
     // TODO: Add important field here
-    struct   CPURegister cpu;
+    struct CPURegister cpu;
     uint32_t eip;
     uint32_t eflags;
-    void     *page_directory_virtual_addr;
+    struct PageDirectory *page_directory_virtual_addr;
 };
 
 typedef enum PROCESS_STATE {
     // TODO: Add process states
-    RUNNING,
-    WAITING,
-    TERMINATED
+    PROCESS_READY,
+    PROCESS_RUNNING,
+    PROCESS_TERMINATED
 } PROCESS_STATE;
 
 /**
@@ -79,7 +79,8 @@ typedef enum PROCESS_STATE {
 struct ProcessControlBlock {
     struct {
         uint32_t pid;
-        PROCESS_STATE state;
+        enum PROCESS_STATE state;
+        
     } metadata;
 
     struct Context context;
