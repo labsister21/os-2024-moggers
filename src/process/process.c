@@ -50,8 +50,8 @@ int32_t process_create_user_process(struct FAT32DriverRequest request) {
     // create new Virtual Address
     struct PageDirectory* new_pd = paging_create_new_page_directory();
 
-    new_pcb->memory.virtual_addr_used[0] = paging_allocate_user_page_frame(new_pd, request.buf);
-    new_pcb->memory.virtual_addr_used[1] = paging_allocate_user_page_frame(new_pd, (uint32_t) 0xBFFFFFFC);
+    new_pcb->memory.virtual_addr_used[0] = (void*) paging_allocate_user_page_frame(new_pd, request.buf) + KERNEL_VIRTUAL_ADDRESS_BASE;
+    new_pcb->memory.virtual_addr_used[1] = (void*) paging_allocate_user_page_frame(new_pd, (void *) 0xBFFFFFFC) + KERNEL_VIRTUAL_ADDRESS_BASE;
     new_pcb->memory.page_frame_used_count = 2;
     
 
@@ -80,7 +80,7 @@ int32_t process_create_user_process(struct FAT32DriverRequest request) {
     new_pcb->context.cpu.segment.es = 0x20 | 0x3;
     new_pcb->context.cpu.segment.fs = 0x20 | 0x3;
     new_pcb->context.cpu.segment.gs = 0x20 | 0x3;
-    new_pcb->context.eip = &request.buf;
+    new_pcb->context.eip = (uint32_t) request.buf;
 
     new_pcb->context.cpu.stack.ebp = 0xBFFFFFFC;
     new_pcb->context.cpu.stack.esp = 0xBFFFFFFC;

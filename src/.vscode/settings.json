@@ -2,6 +2,7 @@
     "files.associations": {
         "*.mq5": "mq4",
         "keyboard.h": "c",
-        "fat32.h": "c"
+        "fat32.h": "c",
+        "scheduler.h": "c"
     }
 }

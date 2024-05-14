@@ -23,6 +23,7 @@
         "typeinfo": "c",
         "stdbool.h": "c",
         "interrupt.h": "c",
-        "gdt.h": "c"
+        "gdt.h": "c",
+        "scheduler.h": "c"
     },
 }

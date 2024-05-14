@@ -1,5 +1,6 @@
 #include "interrupt.h"
 #include "keyboard/keyboard.h"
+#include "scheduler/scheduler.h"
 #include "filesystem/fat32.h"
 #include "syscall_command.h"
 
@@ -131,6 +132,9 @@ void main_interrupt_handler(struct InterruptFrame frame) {
             break;
         case PIC1_OFFSET + IRQ_KEYBOARD:
             keyboard_isr();
+            break;
+        case PIC1_OFFSET + IRQ_TIMER:
+            timer_isr();
             break;
         case 0x30:
             syscall(frame);

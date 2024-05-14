@@ -3,6 +3,22 @@
 
 #include "process/process.h"
 
+
+// TIMER
+#define PIT_MAX_FREQUENCY   1193182
+#define PIT_TIMER_FREQUENCY 1000
+#define PIT_TIMER_COUNTER   (PIT_MAX_FREQUENCY / PIT_TIMER_FREQUENCY)
+
+#define PIT_COMMAND_REGISTER_PIO          0x43
+#define PIT_COMMAND_VALUE_BINARY_MODE     0b0
+#define PIT_COMMAND_VALUE_OPR_SQUARE_WAVE (0b011 << 1)
+#define PIT_COMMAND_VALUE_ACC_LOHIBYTE    (0b11  << 4)
+#define PIT_COMMAND_VALUE_CHANNEL         (0b00  << 6) 
+#define PIT_COMMAND_VALUE (PIT_COMMAND_VALUE_BINARY_MODE | PIT_COMMAND_VALUE_OPR_SQUARE_WAVE | PIT_COMMAND_VALUE_ACC_LOHIBYTE | PIT_COMMAND_VALUE_CHANNEL)
+
+#define PIT_CHANNEL_0_DATA_PIO 0x40
+
+
 /**
  * Read all general purpose register values and set control register.
  * Resume the execution flow back to ctx.eip and ctx.eflags
@@ -11,6 +27,12 @@
  * @param context Target context to switch into
  */
 __attribute__((noreturn)) extern void process_context_switch(struct Context ctx);
+
+
+
+void timer_isr(void);
+
+void activate_timer_interrupt(void);
 
 
 
