@@ -16,6 +16,7 @@ WARNING_CFLAG = -Wall -Wextra -Werror
 DEBUG_CFLAG   = -fshort-wchar -g
 STRIP_CFLAG   = -nostdlib -fno-stack-protector -nostartfiles -nodefaultlibs -ffreestanding
 CFLAGS        = $(DEBUG_CFLAG) $(STRIP_CFLAG) -m32 -c -I$(SOURCE_FOLDER)
+CFLAGS        = $(DEBUG_CFLAG) $(STRIP_CFLAG) -m32 -c -I$(SOURCE_FOLDER)
 AFLAGS        = -f elf32 -g -F dwarf
 LFLAGS        = -T $(SOURCE_FOLDER)/linker.ld -melf_i386
 
@@ -30,6 +31,7 @@ clean:
 
 kernel:
 	@$(ASM) $(AFLAGS) $(SOURCE_FOLDER)/interrupt/intsetup.s -o $(OUTPUT_FOLDER)/intsetup.o
+	@$(ASM) $(AFLAGS) $(SOURCE_FOLDER)/interrupt/intsetup.s -o $(OUTPUT_FOLDER)/intsetup.o
 	@$(ASM) $(AFLAGS) $(SOURCE_FOLDER)/kernel/kernel-entrypoint.s -o $(OUTPUT_FOLDER)/kernel-entrypoint.o
 # TODO: Compile C file with CFLAGS
 	@$(CC) $(CFLAGS) $(SOURCE_FOLDER)/kernel/kernel.c -o $(OUTPUT_FOLDER)/kernel.o
@@ -38,6 +40,7 @@ kernel:
 	@$(CC) $(CFLAGS) $(SOURCE_FOLDER)/framebuffer/portio.c -o $(OUTPUT_FOLDER)/portio.o
 	@$(CC) $(CFLAGS) $(SOURCE_FOLDER)/framebuffer/framebuffer.c -o $(OUTPUT_FOLDER)/framebuffer.o
 	@$(CC) $(CFLAGS) $(SOURCE_FOLDER)/interrupt/interrupt.c -o $(OUTPUT_FOLDER)/interrupt.o
+	@$(CC) $(CFLAGS) $(SOURCE_FOLDER)/interrupt/syscall_command.c -o $(OUTPUT_FOLDER)/syscall_command.o
 	@$(CC) $(CFLAGS) $(SOURCE_FOLDER)/interrupt/syscall_command.c -o $(OUTPUT_FOLDER)/syscall_command.o
 	@$(CC) $(CFLAGS) $(SOURCE_FOLDER)/interrupt/idt.c -o $(OUTPUT_FOLDER)/idt.o
 	@$(CC) $(CFLAGS) $(SOURCE_FOLDER)/keyboard/keyboard.c -o $(OUTPUT_FOLDER)/keyboard.o
@@ -61,6 +64,41 @@ iso: kernel
 
 disk:
 	@qemu-img create -f raw $(OUTPUT_FOLDER)/$(DISK_NAME).bin 4M
+
+inserter:
+	@$(CC) -Wno-builtin-declaration-mismatch -g \
+		$(SOURCE_FOLDER)/std/string.c $(SOURCE_FOLDER)/filesystem/fat32.c \
+		$(SOURCE_FOLDER)/inserter/external-inserter.c \
+		-o $(OUTPUT_FOLDER)/inserter
+
+user-shell:
+	@$(ASM) $(AFLAGS) $(SOURCE_FOLDER)/user_mode/crt0.s -o crt0.o
+	@$(CC)  $(CFLAGS) -fno-pie $(SOURCE_FOLDER)/user_mode/user-shell.c -o user-shell.o
+	@$(CC)  $(CFLAGS) -fno-pie $(SOURCE_FOLDER)/user_mode/command_list/cat.c -o cat.o
+	@$(CC)  $(CFLAGS) -fno-pie $(SOURCE_FOLDER)/user_mode/command_list/ls.c -o ls.o
+	@$(CC)  $(CFLAGS) -fno-pie $(SOURCE_FOLDER)/user_mode/command_list/mkdir.c -o mkdir.o
+	@$(CC)  $(CFLAGS) -fno-pie $(SOURCE_FOLDER)/user_mode/command_list/cd.c -o cd.o
+	@$(CC)  $(CFLAGS) -fno-pie $(SOURCE_FOLDER)/user_mode/command_list/clear.c -o clear.o
+	@$(CC)  $(CFLAGS) -fno-pie $(SOURCE_FOLDER)/user_mode/command_list/help.c -o help.o
+	@$(CC)  $(CFLAGS) -fno-pie $(SOURCE_FOLDER)/user_mode/command_list/rm.c -o rm.o
+	@$(CC)  $(CFLAGS) -fno-pie $(SOURCE_FOLDER)/user_mode/command_list/mv.c -o mv.o
+	@$(CC)  $(CFLAGS) -fno-pie $(SOURCE_FOLDER)/user_mode/command_list/find.c -o find.o
+	@$(CC)  $(CFLAGS) -fno-pie $(SOURCE_FOLDER)/std/string.c -o string.o
+	@$(LIN) -T $(SOURCE_FOLDER)/user_mode/user-linker.ld -melf_i386 --oformat=binary \
+		crt0.o user-shell.o cat.o ls.o mkdir.o cd.o clear.o help.o rm.o mv.o find.o string.o -o $(OUTPUT_FOLDER)/shell
+	@echo Linking object shell object files and generate flat binary...
+	@$(LIN) -T $(SOURCE_FOLDER)/user_mode/user-linker.ld -melf_i386 --oformat=elf32-i386\
+		crt0.o user-shell.o cat.o ls.o mkdir.o cd.o clear.o help.o rm.o mv.o find.o string.o -o $(OUTPUT_FOLDER)/shell_elf
+	@echo Linking object shell object files and generate ELF32 for debugging...
+	@size --target=binary bin/shell
+	@rm -f *.o
+
+
+insert-shell: inserter user-shell
+	@echo Inserting shell into root directory...
+	@cd $(OUTPUT_FOLDER); ./inserter shell 2 $(DISK_NAME).bin
+	@cd $(OUTPUT_FOLDER); ./inserter edbert 2 $(DISK_NAME).bin
+	@cd $(OUTPUT_FOLDER); ./inserter edbert2 2 $(DISK_NAME).bin
 
 inserter:
 	@$(CC) -Wno-builtin-declaration-mismatch -g \

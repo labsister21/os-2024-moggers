@@ -27,6 +27,33 @@ CurrentWorkingDirectory current_working_directory = {
     .neff = 0,
     .path = {0}
 };
+#include "std/string.h"
+#include "user-shell.h"
+
+#include "command_list/cat.h"
+#include "command_list/ls.h"
+#include "command_list/mkdir.h"
+#include "command_list/cd.h"
+#include "command_list/clear.h"
+#include "command_list/help.h"
+#include "command_list/mv.h"
+#include "command_list/rm.h"
+#include "command_list/find.h"
+
+/* DEFINE STRUCT TO BE USED */
+CP cursor_position = {
+    .row = 0,
+    .col = 0
+};
+
+struct FAT32DriverState current_dir = {
+
+};
+
+CurrentWorkingDirectory current_working_directory = {
+    .neff = 0,
+    .path = {0}
+};
 
 void syscall(uint32_t eax, uint32_t ebx, uint32_t ecx, uint32_t edx) {
     __asm__ volatile("mov %0, %%ebx" : /* <Empty> */ : "r"(ebx));
@@ -71,7 +98,7 @@ uint32_t get_cluster_number_self(struct FAT32DirectoryEntry *p){
 
 void handle_keyboard_input(char *buf){
     if(*buf == '\b'){
-        if (cursor_position.col > 20){
+        if (cursor_position.col > 3){
             cursor_position.col--;
             syscall(5, (uint32_t) 0x0, BIOS_WHITE, (uint32_t) &cursor_position);
         }
@@ -172,10 +199,30 @@ void print_template(){
     };
     syscall(6, (uint32_t) "Moggers@OS-IF2230", (uint32_t) &p, (uint32_t) &cursor_position);
 
+
+    char path[1000] ;
+    int index = 0 ;
+    for (int i = 0 ; i < current_working_directory.neff ; i++) {
+        for (int j = 0 ; j < current_working_directory.path[i].len_info ; j++) {
+            path[index] = current_working_directory.path[i].info[j] ;
+            index += 1 ;
+        }
+        path[index] = '/' ;
+        index += 1 ;
+    }
+
+    p.count = index ;
+    p.text_color = BIOS_LIGHT_RED ;
+
+    syscall(6, (uint32_t) path, (uint32_t) &p, (uint32_t) &cursor_position);
+
     p.count = 3;
     p.text_color = BIOS_LIGHT_GRAY;
+    cursor_position.row++ ;
+    cursor_position.col = 0 ;
 
     syscall(6, (uint32_t) ":$ ", (uint32_t) &p, (uint32_t) &cursor_position);
+
     // call move text cursor
     syscall(8, cursor_position.row, cursor_position.col, BIOS_WHITE);
 }
