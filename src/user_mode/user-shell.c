@@ -281,6 +281,9 @@ int main(void) {
         else if(!memcmp(command.info, "clear", command.len_info)){
             clear();
         }
+        else if(!memcmp(command.info, "cp", command.len_info)){
+            cp(&args_list[0],&args_list[1]);
+        }
         else {
             print_unknown(command.info, command.len_info);
         }
