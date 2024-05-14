@@ -1,17 +1,17 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
-#include "std/string.h"
+#include "../std/string.h"
 #include "fat32.h"
 
 struct FAT32DriverState driver_state;
 
 const uint8_t fs_signature[BLOCK_SIZE] = {
-    'C', 'o', 'u', 'r', 's', 'e', ' ', ' ', 'E', 'D', ' ', ' ', ' ', ' ', ' ',  ' ',
+    'C', 'o', 'u', 'r', 's', 'e', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',  ' ',
     'D', 'e', 's', 'i', 'g', 'n', 'e', 'd', ' ', 'b', 'y', ' ', ' ', ' ', ' ',  ' ',
     'L', 'a', 'b', ' ', 'S', 'i', 's', 't', 'e', 'r', ' ', 'I', 'T', 'B', ' ',  ' ',
     'M', 'a', 'd', 'e', ' ', 'w', 'i', 't', 'h', ' ', '<', '3', ' ', ' ', ' ',  ' ',
-    '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '2', '0', '2', '4', '\n',
+    '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '2', '0', '2', '3', '\n',
     [BLOCK_SIZE-2] = 'O',
     [BLOCK_SIZE-1] = 'k',
 };
@@ -141,7 +141,7 @@ int8_t read_directory(struct FAT32DriverRequest request){
         // check dir name
         if(memcmp(driver_state.dir_table_buf.table[i].name, request.name, 8) == 0){
             // check if its a file or a folder
-            if(driver_state.dir_table_buf.table[i].user_attribute != ATTR_SUBDIRECTORY){
+            if(driver_state.dir_table_buf.table[i].attribute != ATTR_SUBDIRECTORY){
                 // return not a folder
                 return 1;
             }
@@ -178,7 +178,7 @@ int8_t read(struct FAT32DriverRequest request){
         if(memcmp(driver_state.dir_table_buf.table[i].name, request.name, 8) == 0 && // check filename
             memcmp(driver_state.dir_table_buf.table[i].ext, request.ext, 3) == 0){ // check extention
                 // check if its a file or a folder
-                if(driver_state.dir_table_buf.table[i].user_attribute == ATTR_SUBDIRECTORY){
+                if(driver_state.dir_table_buf.table[i].attribute == ATTR_SUBDIRECTORY){
                     // return not a file
                     return 1;
                 }
@@ -368,7 +368,7 @@ int8_t write(struct FAT32DriverRequest request){
     return 0;
 }
 
-int8_t delete(__attribute__((unused)) struct FAT32DriverRequest request ){
+int8_t delete( struct FAT32DriverRequest request ){
     read_clusters(driver_state.dir_table_buf.table, request.parent_cluster_number, 1);
 
     // check if parent directory is not a directory
@@ -420,7 +420,7 @@ int8_t delete(__attribute__((unused)) struct FAT32DriverRequest request ){
         bool isEmpty = true;
         int i;
         for(i=2; i<64; i++){
-            if(target_dir.table[i].user_attribute != UATTR_NOT_EMPTY){
+            if(target_dir.table[i].user_attribute == UATTR_NOT_EMPTY){
                 isEmpty = false;
                 break;
             }

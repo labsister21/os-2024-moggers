@@ -6,6 +6,7 @@
 #include <stddef.h>
 
 #include "framebuffer/portio.h"
+#include "gdt/gdt.h"
 /* -- PIC constants -- */
 
 // PIC interrupt offset
@@ -50,7 +51,7 @@
 #define IRQ_FLOPPY_DISK  6
 #define IRQ_LPT1_SPUR    7
 
-// PIC Slave
+// PIC 
 #define IRQ_CMOS         8
 #define IRQ_PERIPHERAL_1 9
 #define IRQ_PERIPHERAL_2 10
@@ -60,6 +61,7 @@
 #define IRQ_PRIMARY_ATA  14
 #define IRQ_SECOND_ATA   15
 
+#define PAGE_FAULT       0xe
 
 /**
  * CPURegister, store CPU registers values.
@@ -75,8 +77,8 @@ struct CPURegister {
         uint32_t esi;
     } __attribute__((packed)) index;
     struct {
-        uint32_t esp;
         uint32_t ebp;
+        uint32_t esp;
     } __attribute__((packed)) stack;
     struct {
         uint32_t ebx;
@@ -154,5 +156,25 @@ void pic_remap(void);
  * @param frame Information about CPU during interrupt is raised
  */
 void main_interrupt_handler(struct InterruptFrame frame);
+
+
+
+extern struct TSSEntry _interrupt_tss_entry;
+
+/**
+ * TSSEntry, Task State Segment. Used when jumping back to ring 0 / kernel
+ */
+struct TSSEntry {
+    uint32_t prev_tss; // Previous TSS 
+    uint32_t esp0;     // Stack pointer to load when changing to kernel mode
+    uint32_t ss0;      // Stack segment to load when changing to kernel mode
+    // Unused variables
+    uint32_t unused_register[23];
+} __attribute__((packed));
+
+// Set kernel stack in TSS
+void set_tss_kernel_current_stack(void);
+
+
 
 #endif
