@@ -6,4 +6,6 @@
 
 void mv(Arg* argument1, Arg* argument2);
 
+void cp(Arg* argument1, Arg* argument2);
+
 #endif
