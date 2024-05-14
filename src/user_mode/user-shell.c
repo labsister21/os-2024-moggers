@@ -27,33 +27,6 @@ CurrentWorkingDirectory current_working_directory = {
     .neff = 0,
     .path = {0}
 };
-#include "std/string.h"
-#include "user-shell.h"
-
-#include "command_list/cat.h"
-#include "command_list/ls.h"
-#include "command_list/mkdir.h"
-#include "command_list/cd.h"
-#include "command_list/clear.h"
-#include "command_list/help.h"
-#include "command_list/mv.h"
-#include "command_list/rm.h"
-#include "command_list/find.h"
-
-/* DEFINE STRUCT TO BE USED */
-CP cursor_position = {
-    .row = 0,
-    .col = 0
-};
-
-struct FAT32DriverState current_dir = {
-
-};
-
-CurrentWorkingDirectory current_working_directory = {
-    .neff = 0,
-    .path = {0}
-};
 
 void syscall(uint32_t eax, uint32_t ebx, uint32_t ecx, uint32_t edx) {
     __asm__ volatile("mov %0, %%ebx" : /* <Empty> */ : "r"(ebx));
