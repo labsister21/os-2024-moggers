@@ -14,15 +14,11 @@ void cd(Arg* argument){
     // update path
     if(!memcmp(argument->info, "..", 3)){
         char root[4] ;
-        root[0] = 'r' ;
-        root[1] = 'o' ;
-        root[2] = 'o' ;
-        root[3] = 't' ;
+        memcpy(&root, "root", 4) ;
         if (memcmp(current_working_directory.path[current_working_directory.neff-1].info, &root, 4)) {
             current_working_directory.neff--;
             memset(&current_working_directory.path[current_working_directory.neff], 0x0, sizeof(current_working_directory.path[current_working_directory.neff]));
         }
-
     } else {
         current_working_directory.path[current_working_directory.neff].len_info = argument->len_info ;
         memcpy(&current_working_directory.path[current_working_directory.neff], argument->info, 8);
