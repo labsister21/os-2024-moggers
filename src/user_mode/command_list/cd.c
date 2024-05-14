@@ -16,7 +16,7 @@ void cd(Arg* argument){
         current_working_directory.neff--;
         memset(&current_working_directory.path[current_working_directory.neff], 0x0, sizeof(current_working_directory.path[current_working_directory.neff]));
     } else {
-        current_working_directory.path[current_working_directory.neff].len_ext = 4;
+        current_working_directory.path[current_working_directory.neff].len_info = argument->len_info ;
         memcpy(&current_working_directory.path[current_working_directory.neff], argument->info, 8);
         current_working_directory.neff++;
     }
@@ -35,8 +35,8 @@ void cd_root(){
 
 
     // update path
-    current_working_directory.path[current_working_directory.neff].len_ext = 4;
-    memcpy(&current_working_directory.path[current_working_directory.neff], "root", 8);
+    current_working_directory.path[current_working_directory.neff].len_info = 4;
+    memcpy(&current_working_directory.path[current_working_directory.neff], "root", 4);
     current_working_directory.neff++;
 }
 
