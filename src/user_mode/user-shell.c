@@ -171,6 +171,9 @@ void print_template(){
         .text_color = BIOS_LIGHT_GREEN
     };
     syscall(6, (uint32_t) "Moggers@OS-IF2230", (uint32_t) &p, (uint32_t) &cursor_position);
+    p.count = 1 ;
+    p.text_color = BIOS_WHITE ;
+    syscall(6, (uint32_t) ":", (uint32_t) &p, (uint32_t) &cursor_position);
 
 
     char path[1000] ;
@@ -184,7 +187,7 @@ void print_template(){
         index += 1 ;
     }
 
-    p.count = index ;
+    p.count = index - 1;
     p.text_color = BIOS_LIGHT_RED ;
 
     syscall(6, (uint32_t) path, (uint32_t) &p, (uint32_t) &cursor_position);
