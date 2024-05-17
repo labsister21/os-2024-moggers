@@ -42,4 +42,4 @@ This project was made by moggers :
 ## Contact
 Silakan menghubungi jika terdapat masalah.
 Contact Person :
-ID LINE [@yeyenhu]
+ID LINE @yeyenhui
