@@ -77,7 +77,10 @@ uint32_t paging_allocate_user_page_frame(struct PageDirectory *page_dir, void *v
         if(!page_manager_state.page_frame_map[i]){
             page_manager_state.page_frame_map[i] = true;
             page_manager_state.free_page_frame_count--;
+<<<<<<< HEAD
             free_physical_frame_index = i;
+=======
+>>>>>>> 30f8f85fa01c8424a332730b60299f537e9c414c
             break;
         }
     }
@@ -99,7 +102,11 @@ uint32_t paging_allocate_user_page_frame(struct PageDirectory *page_dir, void *v
 
     update_page_directory_entry(
         page_dir,
+<<<<<<< HEAD
         (void *) (free_physical_frame_index * PAGE_FRAME_SIZE),
+=======
+        (void *) free_physical_frame_index,
+>>>>>>> 30f8f85fa01c8424a332730b60299f537e9c414c
         virtual_addr,
         user_flag
     );
@@ -176,9 +183,13 @@ struct PageDirectory* paging_create_new_page_directory(void) {
                 .lower_address          = 0,
             };
 
+<<<<<<< HEAD
             new_directory->table[0x300] = new_entry;
 
             // memcpy(&new_directory->table[0x300], &new_entry, sizeof(struct PageDirectoryEntry));
+=======
+            memcpy(&new_directory->table[0x300], &new_entry, sizeof(struct PageDirectoryEntry));
+>>>>>>> 30f8f85fa01c8424a332730b60299f537e9c414c
 
             return new_directory;
         }

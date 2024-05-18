@@ -73,7 +73,7 @@ uint32_t get_cluster_number_self(struct FAT32DirectoryEntry *p){
 
 void handle_keyboard_input(char *buf){
     if(*buf == '\b'){
-        if (cursor_position.col > 20){
+        if (cursor_position.col > 3){
             cursor_position.col--;
             syscall(5, (uint32_t) 0x0, BIOS_WHITE, (uint32_t) &cursor_position);
         }
@@ -173,11 +173,34 @@ void print_template(){
         .text_color = BIOS_LIGHT_GREEN
     };
     syscall(6, (uint32_t) "Moggers@OS-IF2230", (uint32_t) &p, (uint32_t) &cursor_position);
+    p.count = 1 ;
+    p.text_color = BIOS_WHITE ;
+    syscall(6, (uint32_t) ":", (uint32_t) &p, (uint32_t) &cursor_position);
+
+
+    char path[1000] ;
+    int index = 0 ;
+    for (int i = 0 ; i < current_working_directory.neff ; i++) {
+        for (int j = 0 ; j < current_working_directory.path[i].len_info ; j++) {
+            path[index] = current_working_directory.path[i].info[j] ;
+            index += 1 ;
+        }
+        path[index] = '/' ;
+        index += 1 ;
+    }
+
+    p.count = index - 1;
+    p.text_color = BIOS_LIGHT_RED ;
+
+    syscall(6, (uint32_t) path, (uint32_t) &p, (uint32_t) &cursor_position);
 
     p.count = 3;
     p.text_color = BIOS_LIGHT_GRAY;
+    cursor_position.row++ ;
+    cursor_position.col = 0 ;
 
     syscall(6, (uint32_t) ":$ ", (uint32_t) &p, (uint32_t) &cursor_position);
+
     // call move text cursor
     syscall(8, cursor_position.row, cursor_position.col, BIOS_WHITE);
 }
@@ -272,6 +295,8 @@ int main(void) {
         }
         else if(!memcmp(command.info, "apple", command.len_info)){
             apple(&args_list[0]);
+        else if(!memcmp(command.info, "cp", command.len_info)){
+            cp(&args_list[0],&args_list[1]);
         }
         else {
             print_unknown(command.info, command.len_info);
