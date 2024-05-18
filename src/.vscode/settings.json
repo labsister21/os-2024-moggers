@@ -3,6 +3,9 @@
         "*.mq5": "mq4",
         "keyboard.h": "c",
         "fat32.h": "c",
-        "scheduler.h": "c"
+        "scheduler.h": "c",
+        "string.h": "c",
+        "stdint.h": "c",
+        "exec.h": "c"
     }
 }

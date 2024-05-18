@@ -3,7 +3,7 @@
 #include "std/string.h"
 #include "gdt/gdt.h"
 
-static struct ProcessManagerState process_manager_state = {
+struct ProcessManagerState process_manager_state = {
     .active_process_count = 0,
     ._process_used = {false}
 };
@@ -44,16 +44,20 @@ int32_t process_create_user_process(struct FAT32DriverRequest request) {
     int32_t p_index = process_list_get_inactive_index();
     struct ProcessControlBlock *new_pcb = &(_process_list[p_index]);
 
+
     new_pcb->metadata.pid = process_generate_new_pid();
+    new_pcb->metadata.state = PROCESS_READY;
 
     struct PageDirectory* current_pd = paging_get_current_page_directory_addr();
     // create new Virtual Address
     struct PageDirectory* new_pd = paging_create_new_page_directory();
 
-    new_pcb->memory.virtual_addr_used[0] = (void*) paging_allocate_user_page_frame(new_pd, request.buf) + KERNEL_VIRTUAL_ADDRESS_BASE;
-    new_pcb->memory.virtual_addr_used[1] = (void*) paging_allocate_user_page_frame(new_pd, (void *) 0xBFFFFFFC) + KERNEL_VIRTUAL_ADDRESS_BASE;
+    new_pcb->memory.virtual_addr_used[0] = paging_allocate_user_page_frame(new_pd, request.buf) + KERNEL_VIRTUAL_ADDRESS_BASE; 
+    new_pcb->memory.virtual_addr_used[1] = paging_allocate_user_page_frame(new_pd, 0xBFFFFFFC) + KERNEL_VIRTUAL_ADDRESS_BASE;
     new_pcb->memory.page_frame_used_count = 2;
     
+    process_manager_state._process_used[p_index] = true;
+    process_manager_state.active_process_count++;
 
     // ganti ke virtual address baru
     paging_use_page_directory(new_pd);
@@ -87,6 +91,9 @@ int32_t process_create_user_process(struct FAT32DriverRequest request) {
 
     new_pcb->context.page_directory_virtual_addr = new_pd;
 
+    new_pcb->context.cs = 0x18 | 0x3;
+    new_pcb->context.esp = 0xBFFFFFFC;
+    new_pcb->context.ss = 0x20 | 0x3;
     
     new_pcb->context.eflags |= CPU_EFLAGS_BASE_FLAG | CPU_EFLAGS_FLAG_INTERRUPT_ENABLE;
 

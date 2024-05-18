@@ -58,7 +58,10 @@ struct Context {
     // TODO: Add important field here
     struct CPURegister cpu;
     uint32_t eip;
+    uint32_t cs;
     uint32_t eflags;
+    uint32_t esp;
+    uint32_t ss;
     struct PageDirectory *page_directory_virtual_addr;
 };
 
@@ -97,6 +100,8 @@ struct ProcessManagerState {
     bool _process_used[PROCESS_COUNT_MAX];
     uint32_t active_process_count;
 };
+
+extern struct ProcessManagerState process_manager_state;
 
 
 /**

@@ -1,16 +1,15 @@
 #include "scheduler.h"
 
 struct ProcessControlBlock new_pcb = {
-    .context.cpu.general.eax = 1,
-    .context.cpu.general.ebx = 2,
-    .context.cpu.general.ecx = 3,
-    .context.cpu.general.edx = 4,
-    .context.eflags = 5,
-    .context.eip = 6,
-    .context.page_directory_virtual_addr = 7
 };
 
+struct ProcessControlBlock curent_pcb = {
+};
+
+uint32_t current_process_idx = 0;
+
 void activate_timer_interrupt(void) {
+    
     __asm__ volatile("cli");
     // Setup how often PIT fire
     uint32_t pit_timer_counter_to_fire = PIT_TIMER_COUNTER;
@@ -19,12 +18,25 @@ void activate_timer_interrupt(void) {
     out(PIT_CHANNEL_0_DATA_PIO, (uint8_t) ((pit_timer_counter_to_fire >> 8) & 0xFF));
 
     // Activate the interrupt
+    // __asm__ volatile("sti");
     out(PIC1_DATA, in(PIC1_DATA) & ~(1 << IRQ_TIMER));
 }
 
-void timer_isr(void){
+void timer_isr(struct InterruptFrame frame){
+
+    struct Context c = {
+        .cpu = frame.cpu,
+        .eip = frame.int_stack.eip,
+        .cs = frame.int_stack.cs,
+        .eflags = frame.int_stack.eflags,
+        .esp = frame.cpu.stack.esp,
+        .ss = 0x20 | 0x3,
+        .page_directory_virtual_addr = paging_get_current_page_directory_addr(),
+    };
+
+    scheduler_save_context_to_current_running_pcb(c);
+
     scheduler_switch_to_next_process();
-    pic_ack(PIC1_OFFSET + IRQ_TIMER);
 }
 
 void idle_main(void* arg) {
@@ -39,9 +51,32 @@ void scheduler_init(void){
 void scheduler_save_context_to_current_running_pcb(struct Context ctx){
     struct ProcessControlBlock *current_pcb = process_get_current_running_pcb_pointer();
 
-    memset(&(*current_pcb).context, (int) &ctx, sizeof(struct Context));
+    memcpy(&(*current_pcb).context, &ctx, sizeof(struct Context));
 }
 
 __attribute__((noreturn)) void scheduler_switch_to_next_process(void){
-    process_context_switch(new_pcb.context);
+    if(current_process_idx == 0){
+        _process_list[0].metadata.state = PROCESS_RUNNING;
+        
+        if (process_manager_state.active_process_count > 1){
+            current_process_idx = 1;
+            _process_list[1].metadata.state = PROCESS_READY;
+        }
+        
+        paging_use_page_directory(_process_list[0].context.page_directory_virtual_addr);
+        // process etc cleanup
+        pic_ack(PIC1_OFFSET + IRQ_TIMER);
+        process_context_switch(_process_list[0].context);
+    }
+    else if(process_manager_state.active_process_count > 1 && current_process_idx == 1){ // > 1 && current_process_idx == 1){
+        _process_list[1].metadata.state = PROCESS_RUNNING;
+        _process_list[0].metadata.state = PROCESS_READY;
+
+        current_process_idx = 0;
+
+        paging_use_page_directory(_process_list[1].context.page_directory_virtual_addr);
+        // process etc cleanup
+        pic_ack(PIC1_OFFSET + IRQ_TIMER);
+        process_context_switch(_process_list[1].context);
+    }
 }

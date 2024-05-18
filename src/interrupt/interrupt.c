@@ -3,6 +3,7 @@
 #include "scheduler/scheduler.h"
 #include "filesystem/fat32.h"
 #include "syscall_command.h"
+#include "cmos/cmos.h"
 
 // initialize _interrupt_tss_entry 
 struct TSSEntry _interrupt_tss_entry = {
@@ -122,10 +123,44 @@ void syscall(struct InterruptFrame frame) {
     else if(frame.cpu.general.eax == 10) {
         *((uint16_t*) frame.cpu.general.ebx) = get_cursor_position();
     }
+    /* 11 - create_new_process - buat bikin process baru */
+    else if(frame.cpu.general.eax == 11){
+        *((int8_t*) frame.cpu.general.ecx) = process_create_user_process(
+            *(struct FAT32DriverRequest*)frame.cpu.general.ebx
+        );
+    }
+    /* 12 - list_all_process - list proce */
+    else if(frame.cpu.general.eax == 12){
+        
+    }
+    /* 13 - kill a process - kill a process */
+    else if(frame.cpu.general.eax == 13) {
+
+    }
+    /* 14 - get time - get time */
+    else if(frame.cpu.general.eax == 14){
+        read_rtc((struct Time*) frame.cpu.general.ebx);
+    }
+    /* 15 - clock - command to create process and run the clock */
+    else if(frame.cpu.general.eax == 15){
+        struct FAT32DriverRequest request = {
+            .buf                   = (uint8_t*) 0,
+            .name                  = "timer",
+            .ext                   = "\0\0\0",
+            .parent_cluster_number = ROOT_CLUSTER_NUMBER,
+            .buffer_size           = 0x100000,
+        };
+        
+        process_create_user_process(request);
+    }
+
 }
 
 
 void main_interrupt_handler(struct InterruptFrame frame) {
+    // dibawah 0x20 error semua.
+    // 0xd general protection fault
+
     switch (frame.int_number) {
         case PAGE_FAULT:
             __asm__("hlt");
@@ -134,7 +169,7 @@ void main_interrupt_handler(struct InterruptFrame frame) {
             keyboard_isr();
             break;
         case PIC1_OFFSET + IRQ_TIMER:
-            timer_isr();
+            timer_isr(frame);
             break;
         case 0x30:
             syscall(frame);

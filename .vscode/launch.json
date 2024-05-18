@@ -34,7 +34,11 @@
                 {
                     "text": "add-symbol-file shell_elf",
                     "description": "Get shell symbols"
-                },            
+                },
+                // {
+                //     "text": "add-symbol-file timer_elf",
+                //     "description": "Get timer symbols"
+                // },            
                 {
                     "text": "set output-radix 16",
                     "description": "Use hexadecimal output"

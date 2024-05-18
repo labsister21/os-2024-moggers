@@ -6,7 +6,7 @@
 
 // TIMER
 #define PIT_MAX_FREQUENCY   1193182
-#define PIT_TIMER_FREQUENCY 1000
+#define PIT_TIMER_FREQUENCY 1 // 1000
 #define PIT_TIMER_COUNTER   (PIT_MAX_FREQUENCY / PIT_TIMER_FREQUENCY)
 
 #define PIT_COMMAND_REGISTER_PIO          0x43
@@ -30,7 +30,7 @@ __attribute__((noreturn)) extern void process_context_switch(struct Context ctx)
 
 
 
-void timer_isr(void);
+void timer_isr(struct InterruptFrame frame);
 
 void activate_timer_interrupt(void);
 

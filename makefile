@@ -26,7 +26,7 @@ run: all
 all: build
 build: iso
 clean:
-	rm -rf *.o *.iso $(OUTPUT_FOLDER)/kernel
+	@cd bin && rm -rf *.o *.iso $(OUTPUT_FOLDER)/kernel
 
 kernel:
 	@$(ASM) $(AFLAGS) $(SOURCE_FOLDER)/interrupt/intsetup.s -o $(OUTPUT_FOLDER)/intsetup.o
@@ -46,6 +46,7 @@ kernel:
 	@$(CC) $(CFLAGS) $(SOURCE_FOLDER)/paging/paging.c -o $(OUTPUT_FOLDER)/paging.o
 	@$(CC) $(CFLAGS) $(SOURCE_FOLDER)/process/process.c -o $(OUTPUT_FOLDER)/process.o
 	@$(CC) $(CFLAGS) $(SOURCE_FOLDER)/scheduler/scheduler.c -o $(OUTPUT_FOLDER)/scheduler.o
+	@$(CC)  $(CFLAGS) -fno-pie $(SOURCE_FOLDER)/cmos/cmos.c -o $(OUTPUT_FOLDER)/cmos.o
 	@$(LIN) $(LFLAGS) bin/*.o -o $(OUTPUT_FOLDER)/kernel
 	@echo Linking object files and generate elf32...
 	@rm -f *.o
@@ -80,19 +81,42 @@ user-shell:
 	@$(CC)  $(CFLAGS) -fno-pie $(SOURCE_FOLDER)/user_mode/command_list/rm.c -o rm.o
 	@$(CC)  $(CFLAGS) -fno-pie $(SOURCE_FOLDER)/user_mode/command_list/mv.c -o mv.o
 	@$(CC)  $(CFLAGS) -fno-pie $(SOURCE_FOLDER)/user_mode/command_list/find.c -o find.o
+	@$(CC)  $(CFLAGS) -fno-pie $(SOURCE_FOLDER)/user_mode/command_list/exec.c -o exec.o
+	@$(CC)  $(CFLAGS) -fno-pie $(SOURCE_FOLDER)/user_mode/command_list/apple.c -o apple.o
 	@$(CC)  $(CFLAGS) -fno-pie $(SOURCE_FOLDER)/std/string.c -o string.o
 	@$(LIN) -T $(SOURCE_FOLDER)/user_mode/user-linker.ld -melf_i386 --oformat=binary \
-		crt0.o user-shell.o cat.o ls.o mkdir.o cd.o clear.o help.o rm.o mv.o find.o string.o -o $(OUTPUT_FOLDER)/shell
+		crt0.o user-shell.o cat.o ls.o mkdir.o cd.o clear.o help.o rm.o mv.o find.o exec.o apple.o string.o -o $(OUTPUT_FOLDER)/shell
 	@echo Linking object shell object files and generate flat binary...
 	@$(LIN) -T $(SOURCE_FOLDER)/user_mode/user-linker.ld -melf_i386 --oformat=elf32-i386\
-		crt0.o user-shell.o cat.o ls.o mkdir.o cd.o clear.o help.o rm.o mv.o find.o string.o -o $(OUTPUT_FOLDER)/shell_elf
+		crt0.o user-shell.o cat.o ls.o mkdir.o cd.o clear.o help.o rm.o mv.o find.o exec.o apple.o string.o -o $(OUTPUT_FOLDER)/shell_elf
 	@echo Linking object shell object files and generate ELF32 for debugging...
 	@size --target=binary bin/shell
 	@rm -f *.o
 
+user-timer:
+	@$(ASM) $(AFLAGS) $(SOURCE_FOLDER)/timer/crt0-timer.s -o crt0-timer.o
+	@$(CC)  $(CFLAGS) -fno-pie $(SOURCE_FOLDER)/timer/timer.c -o timer.o
+	@$(CC)  $(CFLAGS) -fno-pie $(SOURCE_FOLDER)/std/string.c -o string.o
+	@$(CC)  $(CFLAGS) -fno-pie $(SOURCE_FOLDER)/cmos/cmos.c -o cmos.o
+	@$(CC)  $(CFLAGS) -fno-pie $(SOURCE_FOLDER)/framebuffer/portio.c -o portio.o
+	
+	@$(LIN) -T $(SOURCE_FOLDER)/timer/timer-linker.ld -melf_i386 --oformat=binary \
+		crt0-timer.o timer.o cmos.o portio.o string.o -o $(OUTPUT_FOLDER)/timer
+	@echo Linking object shell object files and generate flat binary...
+
+#	@$(LIN) -T $(SOURCE_FOLDER)/timer/timer-linker.ld -melf_i386 --oformat=elf32-i386\
+		crt0-timer.o timer.o cmos.o portio.o string.o -o $(OUTPUT_FOLDER)/timer_elf
+	@echo Linking object timer object files and generate ELF32 for debugging...
+	@size --target=binary bin/timer
+	@rm -f *.o
+
+
+insert-timer: inserter user-timer
+	@cd $(OUTPUT_FOLDER); ./inserter timer 2 $(DISK_NAME).bin
 
 insert-shell: inserter user-shell
 	@echo Inserting shell into root directory...
 	@cd $(OUTPUT_FOLDER); ./inserter shell 2 $(DISK_NAME).bin
 	@cd $(OUTPUT_FOLDER); ./inserter edbert 2 $(DISK_NAME).bin
 	@cd $(OUTPUT_FOLDER); ./inserter edbert2 2 $(DISK_NAME).bin
+#	@cd $(OUTPUT_FOLDER); ./inserter os-dev 2 $(DISK_NAME).bin

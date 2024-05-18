@@ -107,29 +107,24 @@ kernel_execute_user_program:
     push eax ; Code segment selector (GDT_USER_CODE_SELECTOR), user privilege
     mov  eax, ecx
     push eax ; eip register to jump back
-
     iret
 
-
 global process_context_switch
-; Load struct Context (CPU GP-register) then jump
+
+; Load struct Context (CPU GP-register + CR3) then jump
 ; Function Signature: void process_context_switch(struct Context ctx);
 process_context_switch:
     ; Using iret (return instruction for interrupt) technique for privilege change
-    ; stack values will be loaded into these register
 
     lea  ecx, [esp+0x04] ; Save the base address for struct Context ctx
-    push eax
-    mov eax, 0xBFFFFFFC
-    push eax
-    pushf
-    mov eax, 0x18 | 0x3
-    push eax
-    mov eax, ecx
-
-    ; Push general purpose & index register with this order:
-    ; eax, ecx, edx, ebx, ebp, esp, esi, edi
-    ; CPURegister.general & CPURegister.index
-    pushad 
+    mov esp, ecx ;
+    
+    popad ; dah masukin di register
+    
+    ; Restore segment registers
+    pop gs
+    pop fs
+    pop es
+    pop ds
 
     iret
