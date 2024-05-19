@@ -120,4 +120,4 @@ insert-shell: inserter user-shell
 	@cd $(OUTPUT_FOLDER); ./inserter shell 2 $(DISK_NAME).bin
 	@cd $(OUTPUT_FOLDER); ./inserter edbert 2 $(DISK_NAME).bin
 	@cd $(OUTPUT_FOLDER); ./inserter edbert2 2 $(DISK_NAME).bin
-#	@cd $(OUTPUT_FOLDER); ./inserter os-dev 2 $(DISK_NAME).bin
+	@cd $(OUTPUT_FOLDER); ./inserter os-dev 2 $(DISK_NAME).bin
