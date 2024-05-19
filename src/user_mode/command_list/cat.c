@@ -5,7 +5,7 @@ void cat(Arg* argument){
     int mod = current_dir.dir_table_buf.table[get_entry_row(argument)].filesize % CLUSTER_SIZE;
     if(mod != 0) cluster_needed++;
 
-    struct ClusterBuffer cl[cluster_needed];
+    struct ClusterBuffer cl[1];
     for(uint32_t i=0; i<cluster_needed; i++){
         for(int j=0; j<CLUSTER_SIZE; j++){
             cl[i].buf[j] = 0x0;

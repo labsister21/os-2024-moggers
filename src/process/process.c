@@ -44,7 +44,7 @@ int32_t process_create_user_process(struct FAT32DriverRequest request) {
     int32_t p_index = process_list_get_inactive_index();
     struct ProcessControlBlock *new_pcb = &(_process_list[p_index]);
 
-
+    memcpy(&new_pcb->metadata.name, request.name, 8);
     new_pcb->metadata.pid = process_generate_new_pid();
     new_pcb->metadata.state = PROCESS_READY;
 
@@ -111,7 +111,13 @@ bool process_destroy(uint32_t pid) {
             process_manager_state.active_process_count--;
             process_manager_state._process_used[i] = false;
 
+            // release page frame
+            for(uint8_t j=0; j<_process_list[i].memory.page_frame_used_count; i++){
+                paging_free_user_page_frame(_process_list[pid].context.page_directory_virtual_addr, _process_list[pid].memory.virtual_addr_used[j]);
+            }
 
+            // clean the page_directory
+            memset(&_process_list[i], 0x0, sizeof(struct ProcessControlBlock));
         }
     }
     return false;

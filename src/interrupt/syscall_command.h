@@ -62,3 +62,6 @@ int8_t move_text_cursor(uint16_t r, uint16_t c, uint32_t cursor_color);
 int8_t clear_screen();
 
 uint16_t get_cursor_position();
+
+
+uint8_t list_all_process(CP* cursor_position);

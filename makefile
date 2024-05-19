@@ -83,12 +83,13 @@ user-shell:
 	@$(CC)  $(CFLAGS) -fno-pie $(SOURCE_FOLDER)/user_mode/command_list/find.c -o find.o
 	@$(CC)  $(CFLAGS) -fno-pie $(SOURCE_FOLDER)/user_mode/command_list/exec.c -o exec.o
 	@$(CC)  $(CFLAGS) -fno-pie $(SOURCE_FOLDER)/user_mode/command_list/apple.c -o apple.o
+	@$(CC)  $(CFLAGS) -fno-pie $(SOURCE_FOLDER)/user_mode/command_list/kill.c -o kill.o
 	@$(CC)  $(CFLAGS) -fno-pie $(SOURCE_FOLDER)/std/string.c -o string.o
 	@$(LIN) -T $(SOURCE_FOLDER)/user_mode/user-linker.ld -melf_i386 --oformat=binary \
-		crt0.o user-shell.o cat.o ls.o mkdir.o cd.o clear.o help.o rm.o mv.o find.o exec.o apple.o string.o -o $(OUTPUT_FOLDER)/shell
+		crt0.o user-shell.o cat.o ls.o mkdir.o cd.o clear.o help.o rm.o mv.o find.o exec.o apple.o kill.o string.o -o $(OUTPUT_FOLDER)/shell
 	@echo Linking object shell object files and generate flat binary...
 	@$(LIN) -T $(SOURCE_FOLDER)/user_mode/user-linker.ld -melf_i386 --oformat=elf32-i386\
-		crt0.o user-shell.o cat.o ls.o mkdir.o cd.o clear.o help.o rm.o mv.o find.o exec.o apple.o string.o -o $(OUTPUT_FOLDER)/shell_elf
+		crt0.o user-shell.o cat.o ls.o mkdir.o cd.o clear.o help.o rm.o mv.o find.o exec.o apple.o kill.o string.o -o $(OUTPUT_FOLDER)/shell_elf
 	@echo Linking object shell object files and generate ELF32 for debugging...
 	@size --target=binary bin/shell
 	@rm -f *.o

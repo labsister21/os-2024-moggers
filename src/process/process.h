@@ -83,7 +83,7 @@ struct ProcessControlBlock {
     struct {
         uint32_t pid;
         enum PROCESS_STATE state;
-        
+        char name[10];
     } metadata;
 
     struct Context context;

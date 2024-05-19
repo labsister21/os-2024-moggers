@@ -10,12 +10,32 @@ void cd(Arg* argument){
         .buffer_size = sizeof(current_dir.cluster_buf),
         .parent_cluster_number = get_cluster_number()
     };
+    memcpy(request.name, (*argument).info, (*argument).len_info);
 
     // struct FAT32DriverState temp ;
+    
+    // check if it exist or not
+    uint32_t i = 0;
+    bool isFound = false;
+    while(i < CLUSTER_SIZE / sizeof(struct FAT32DirectoryEntry)){
+        if(current_dir.dir_table_buf.table[i].user_attribute == UATTR_NOT_EMPTY){
+            if(current_dir.dir_table_buf.table[i].attribute == ATTR_SUBDIRECTORY &&
+                !memcmp(current_dir.dir_table_buf.table[i].name, request.name, 8)){
+                isFound = true;
+                break;
+            }
+        }
+        i++;
+    }
+
+    if(!isFound){
+        return;
+    }
 
     memset(&current_dir, 0x0, sizeof(struct FAT32DriverState));
-    memcpy(request.name, (*argument).info, (*argument).len_info);
     uint32_t response_code;
+
+
     syscall(1, (uint32_t) &request, (uint32_t) &response_code, 0);
 
     // uint32_t i = 0;

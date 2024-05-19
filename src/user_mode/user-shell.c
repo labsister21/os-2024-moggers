@@ -14,6 +14,7 @@
 #include "command_list/find.h"
 #include "command_list/exec.h"
 #include "command_list/apple.h"
+#include "command_list/kill.h"
 
 /* DEFINE STRUCT TO BE USED */
 CP cursor_position = {
@@ -290,11 +291,14 @@ int main(void) {
             exec(&args_list[0]);
         }
         else if(!memcmp(command.info, "ps", command.len_info)){
+            syscall(12, (uint32_t) &cursor_position, 0, 0);
         }
         else if(!memcmp(command.info, "kill", command.len_info)){
+            kill(&args_list[0]);
         }
         else if(!memcmp(command.info, "apple", command.len_info)){
             apple(&args_list[0]);
+        }
         else if(!memcmp(command.info, "cp", command.len_info)){
             cp(&args_list[0],&args_list[1]);
         }
