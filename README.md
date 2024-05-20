@@ -3,9 +3,14 @@
 
 
 ## Features
-- Terminal atau shell
-- 
-- 
+- Shell
+- Keyboard
+- File System FAT32
+- Kernel and User Mode
+- Process Control Block
+- Scheduler
+- Multitasking
+- Video Bad Apple
 
 
 ## Setup
