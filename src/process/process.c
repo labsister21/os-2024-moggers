@@ -112,12 +112,18 @@ bool process_destroy(uint32_t pid) {
             process_manager_state._process_used[i] = false;
 
             // release page frame
-            for(uint8_t j=0; j<_process_list[i].memory.page_frame_used_count; i++){
+            for(uint8_t j=0; j< PROCESS_PAGE_FRAME_COUNT_MAX; j++){
+                // if(_process_list[i].memory.virtual_addr_used[j])
                 paging_free_user_page_frame(_process_list[pid].context.page_directory_virtual_addr, _process_list[pid].memory.virtual_addr_used[j]);
             }
 
+            // free page directory
+            paging_free_page_directory(_process_list[pid].context.page_directory_virtual_addr);
+
             // clean the page_directory
             memset(&_process_list[i], 0x0, sizeof(struct ProcessControlBlock));
+
+            return true;
         }
     }
     return false;

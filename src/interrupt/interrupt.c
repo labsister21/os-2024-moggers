@@ -138,7 +138,6 @@ void syscall(struct InterruptFrame frame) {
     /* 13 - kill a process - kill a process */
     else if(frame.cpu.general.eax == 13) {
         process_destroy(frame.cpu.general.ebx);
-        scheduler_switch_to_next_process();
     }
     /* 14 - get time - get time */
     else if(frame.cpu.general.eax == 14){
@@ -148,11 +147,11 @@ void syscall(struct InterruptFrame frame) {
     else if(frame.cpu.general.eax == 15){
         struct FAT32DriverRequest request = {
             .buf                   = (uint8_t*) 0,
-            .name                  = "timer",
             .ext                   = "\0\0\0",
-            .parent_cluster_number = ROOT_CLUSTER_NUMBER,
+            .parent_cluster_number = frame.cpu.general.ecx,
             .buffer_size           = 0x100000,
         };
+        memcpy(request.name, frame.cpu.general.ebx, 8);
         
         process_create_user_process(request);
     }

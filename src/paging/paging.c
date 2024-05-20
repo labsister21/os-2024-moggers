@@ -115,25 +115,24 @@ bool paging_free_user_page_frame(struct PageDirectory *page_dir, void *virtual_a
      */
 
     uint32_t page_index = ((uint32_t) virtual_addr >> 22) & 0x3FF;
-    uint32_t physical_address_index = 0;
+    uint32_t physical_address_index = (page_dir->table[page_index].lower_address) << 22;
 
-    int i;
-    for(i=0; i<PAGE_FRAME_MAX_COUNT; i++){
-        if(page_dir->table[page_index].lower_address == (((uint32_t) i >> 22) & 0x3FF)){
-            physical_address_index = i;
-            page_manager_state.page_frame_map[i] = false;
-            page_manager_state.free_page_frame_count++;
+    uint32_t page_num = physical_address_index / PAGE_FRAME_SIZE;
+    if(page_manager_state.page_frame_map[page_num]){
+        page_manager_state.page_frame_map[page_num] = false;
 
-            memset(&(*page_dir).table[page_index], 0x0, sizeof(struct PageDirectoryEntry));
-            break;
-        }
+        struct PageDirectoryEntryFlag flag;
+        update_page_directory_entry(
+            page_dir,
+            0,
+            virtual_addr,
+            flag
+        );
+
+        page_manager_state.free_page_frame_count++;
+        return true;
     }
-
-    // error handling not found;
-    if(i == PAGE_FRAME_MAX_COUNT)
-        return false;
-
-    return true;
+    return false;
 }
 
 

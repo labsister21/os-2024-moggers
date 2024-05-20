@@ -111,9 +111,29 @@ user-timer:
 	@size --target=binary bin/timer
 	@rm -f *.o
 
+user-bounce:
+	@$(ASM) $(AFLAGS) $(SOURCE_FOLDER)/bounce/crt0-bounce.s -o crt0-bounce.o
+	@$(CC)  $(CFLAGS) -fno-pie $(SOURCE_FOLDER)/bounce/bounce.c -o bounce.o
+	@$(CC)  $(CFLAGS) -fno-pie $(SOURCE_FOLDER)/std/string.c -o string.o
+	@$(CC)  $(CFLAGS) -fno-pie $(SOURCE_FOLDER)/cmos/cmos.c -o cmos.o
+	@$(CC)  $(CFLAGS) -fno-pie $(SOURCE_FOLDER)/framebuffer/portio.c -o portio.o
+	
+	@$(LIN) -T $(SOURCE_FOLDER)/bounce/bounce-linker.ld -melf_i386 --oformat=binary \
+		crt0-bounce.o bounce.o cmos.o portio.o string.o -o $(OUTPUT_FOLDER)/bounce
+	@echo Linking object shell object files and generate flat binary...
+
+#	@$(LIN) -T $(SOURCE_FOLDER)/timer/timer-linker.ld -melf_i386 --oformat=elf32-i386\
+		crt0-timer.o timer.o cmos.o portio.o string.o -o $(OUTPUT_FOLDER)/timer_elf
+	@echo Linking object bounce object files and generate ELF32 for debugging...
+	@size --target=binary bin/bounce
+	@rm -f *.o
+
 
 insert-timer: inserter user-timer
 	@cd $(OUTPUT_FOLDER); ./inserter timer 2 $(DISK_NAME).bin
+
+insert-bounce: inserter user-bounce
+	@cd $(OUTPUT_FOLDER); ./inserter bounce 2 $(DISK_NAME).bin
 
 insert-shell: inserter user-shell
 	@echo Inserting shell into root directory...

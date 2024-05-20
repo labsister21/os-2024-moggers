@@ -50,7 +50,7 @@ void apple(Arg* argument){
             cursor_position.col = 0;
         }
 
-        uint32_t i = 0xFFFFFF;
+        uint32_t i = 0xFFFFF;
         while(i){
             i--;
         }
