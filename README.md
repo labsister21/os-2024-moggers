@@ -11,6 +11,7 @@
 - Scheduler
 - Multitasking
 - Video Bad Apple
+- Little Guy on the Screen
 
 
 ## Setup
